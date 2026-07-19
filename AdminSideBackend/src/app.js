@@ -11,9 +11,25 @@ dotenv.config();
 
 const app = express();
 
+const defaultOrigins = ["http://localhost:3001", "http://localhost:3000"];
+const allowedOrigins = (process.env.CORS_ORIGIN || "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+const corsOrigins = allowedOrigins.length > 0 ? allowedOrigins : defaultOrigins;
+
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN?.split(",") || ["http://localhost:3001"],
+    origin(origin, callback) {
+      // Allow non-browser clients (no Origin header) and configured frontends
+      if (!origin || corsOrigins.includes(origin) || corsOrigins.includes("*")) {
+        callback(null, true);
+        return;
+      }
+
+      callback(null, false);
+    },
     credentials: true,
   })
 );
