@@ -3,7 +3,14 @@ import { AuthProvider } from '../context/AuthContext'
 import AdminLayout from '../layouts/AdminLayout'
 import AuthLayout from '../layouts/AuthLayout'
 import LoginPage from '../pages/auth/LoginPage'
+import BoxStylePage from '../pages/box-style/BoxStylePage'
+import CategoryPage from '../pages/category/CategoryPage'
 import DashboardPage from '../pages/dashboard/DashboardPage'
+import FinishPage from '../pages/finish/FinishPage'
+import IndustryPage from '../pages/industry/IndustryPage'
+import MaterialPage from '../pages/material/MaterialPage'
+import ProductPage from '../pages/product/ProductPage'
+import QuoteRequestsPage from '../pages/quotes/QuoteRequestsPage'
 import ModulePlaceholder from '../components/common/ModulePlaceholder'
 import ProtectedRoute from './ProtectedRoute'
 
@@ -20,13 +27,14 @@ function AppRoutes() {
             <Route element={<AdminLayout />}>
               <Route index element={<Navigate to="/dashboard" replace />} />
               <Route path="/dashboard" element={<DashboardPage />} />
-              <Route path="/categories" element={<ModulePlaceholder title="Categories" />} />
-              <Route path="/industries" element={<ModulePlaceholder title="Industries" />} />
-              <Route path="/box-styles" element={<ModulePlaceholder title="Box Styles" />} />
-              <Route path="/materials" element={<ModulePlaceholder title="Materials" />} />
-              <Route path="/finishes" element={<ModulePlaceholder title="Finishes" />} />
-              <Route path="/products" element={<ModulePlaceholder title="Products" />} />
-              <Route path="/quotes" element={<ModulePlaceholder title="Quotes" />} />
+              <Route path="/products" element={<ProductPage />} />
+              <Route path="/categories" element={<CategoryPage />} />
+              <Route path="/industries" element={<IndustryPage />} />
+              <Route path="/box-styles" element={<BoxStylePage />} />
+              <Route path="/materials" element={<MaterialPage />} />
+              <Route path="/finishes" element={<FinishPage />} />
+              <Route path="/quote-requests" element={<QuoteRequestsPage />} />
+              <Route path="/settings" element={<ModulePlaceholder title="Settings" />} />
             </Route>
           </Route>
 

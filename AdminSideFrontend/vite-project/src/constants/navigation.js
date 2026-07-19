@@ -7,6 +7,7 @@ import {
   Layers3,
   Package,
   PaintBucket,
+  Settings,
   Sparkles,
 } from 'lucide-react'
 
@@ -15,6 +16,11 @@ export const navigationItems = [
     label: 'Dashboard',
     path: '/dashboard',
     icon: ChartNoAxesColumnIncreasing,
+  },
+  {
+    label: 'Products',
+    path: '/products',
+    icon: Package,
   },
   {
     label: 'Categories',
@@ -42,14 +48,14 @@ export const navigationItems = [
     icon: Sparkles,
   },
   {
-    label: 'Products',
-    path: '/products',
-    icon: Package,
+    label: 'Quote Requests',
+    path: '/quote-requests',
+    icon: ClipboardList,
   },
   {
-    label: 'Quotes',
-    path: '/quotes',
-    icon: ClipboardList,
+    label: 'Settings',
+    path: '/settings',
+    icon: Settings,
   },
 ]
 
