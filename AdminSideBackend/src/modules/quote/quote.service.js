@@ -1,15 +1,25 @@
 const prisma = require("../../prisma/client");
 
+function createHttpError(message, statusCode) {
+  const error = new Error(message);
+  error.statusCode = statusCode;
+  return error;
+}
+
 async function getQuotes({ page = 1, limit = 10, search = "", productId = "", sort = "desc" }) {
-  const take = Number(limit);
-  const skip = (Number(page) - 1) * take;
+  const currentPage = Math.max(1, Number(page) || 1);
+  const take = Math.min(100, Math.max(1, Number(limit) || 10));
+  const skip = (currentPage - 1) * take;
+  const normalizedSearch = String(search).trim();
 
   const where = {
-    ...(search
+    ...(normalizedSearch
       ? {
           OR: [
-            { name: { contains: search, mode: "insensitive" } },
-            { email: { contains: search, mode: "insensitive" } },
+            { name: { contains: normalizedSearch, mode: "insensitive" } },
+            { email: { contains: normalizedSearch, mode: "insensitive" } },
+            { phone: { contains: normalizedSearch, mode: "insensitive" } },
+            { productName: { contains: normalizedSearch, mode: "insensitive" } },
           ],
         }
       : {}),
@@ -34,10 +44,10 @@ async function getQuotes({ page = 1, limit = 10, search = "", productId = "", so
   return {
     quotes,
     pagination: {
-      page: Number(page),
+      page: currentPage,
       limit: take,
       total,
-      totalPages: Math.ceil(total / take),
+      totalPages: Math.max(1, Math.ceil(total / take)),
     },
   };
 }
@@ -51,16 +61,55 @@ async function getQuoteById(id) {
   });
 
   if (!quote) {
-    const error = new Error("Quote request not found");
-    error.statusCode = 404;
-    throw error;
+    throw createHttpError("Quote request not found", 404);
   }
 
   return quote;
 }
 
 async function createQuote(data) {
+  if (data.productId) {
+    const product = await prisma.product.findUnique({
+      where: { id: data.productId },
+      select: { id: true },
+    });
+
+    if (!product) {
+      throw createHttpError("Selected product was not found", 400);
+    }
+  }
+
   return prisma.quoteRequest.create({
+    data,
+    include: {
+      product: true,
+    },
+  });
+}
+
+async function updateQuote(id, data) {
+  const existingQuote = await prisma.quoteRequest.findUnique({
+    where: { id },
+    select: { id: true },
+  });
+
+  if (!existingQuote) {
+    throw createHttpError("Quote request not found", 404);
+  }
+
+  if (data.productId) {
+    const product = await prisma.product.findUnique({
+      where: { id: data.productId },
+      select: { id: true },
+    });
+
+    if (!product) {
+      throw createHttpError("Selected product was not found", 400);
+    }
+  }
+
+  return prisma.quoteRequest.update({
+    where: { id },
     data,
     include: {
       product: true,
@@ -74,9 +123,7 @@ async function deleteQuote(id) {
   });
 
   if (!existingQuote) {
-    const error = new Error("Quote request not found");
-    error.statusCode = 404;
-    throw error;
+    throw createHttpError("Quote request not found", 404);
   }
 
   return prisma.quoteRequest.delete({
@@ -88,5 +135,6 @@ module.exports = {
   getQuotes,
   getQuoteById,
   createQuote,
+  updateQuote,
   deleteQuote,
 };

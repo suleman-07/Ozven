@@ -1,14 +1,10 @@
 import {
-  Boxes,
   ChartNoAxesColumnIncreasing,
   ClipboardList,
-  Factory,
   FolderTree,
-  Layers3,
   Package,
   PaintBucket,
   Settings,
-  Sparkles,
 } from 'lucide-react'
 
 export const navigationItems = [
@@ -26,26 +22,6 @@ export const navigationItems = [
     label: 'Categories',
     path: '/categories',
     icon: FolderTree,
-  },
-  {
-    label: 'Industries',
-    path: '/industries',
-    icon: Factory,
-  },
-  {
-    label: 'Box Styles',
-    path: '/box-styles',
-    icon: Boxes,
-  },
-  {
-    label: 'Materials',
-    path: '/materials',
-    icon: Layers3,
-  },
-  {
-    label: 'Finishes',
-    path: '/finishes',
-    icon: Sparkles,
   },
   {
     label: 'Quote Requests',

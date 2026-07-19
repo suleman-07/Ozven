@@ -34,7 +34,7 @@ function Sidebar({ isCollapsed, isOpen, onClose, onToggleCollapse }) {
               <PackageCheck size={22} aria-hidden="true" />
             </span>
             <div className={cn('min-w-0', isCollapsed && 'lg:hidden')}>
-              <p className="truncate text-sm font-semibold text-slate-950">Oxo Packaging</p>
+              <p className="truncate text-sm font-semibold text-slate-950">Ozven</p>
               <p className="text-xs text-slate-500">Admin Console</p>
             </div>
           </div>

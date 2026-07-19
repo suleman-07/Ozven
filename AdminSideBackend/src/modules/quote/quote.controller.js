@@ -1,5 +1,11 @@
 const { validateQuoteInput } = require("./quote.validation");
-const { getQuotes, getQuoteById, createQuote, deleteQuote } = require("./quote.service");
+const {
+  getQuotes,
+  getQuoteById,
+  createQuote,
+  updateQuote,
+  deleteQuote,
+} = require("./quote.service");
 
 async function listQuotes(req, res) {
   try {
@@ -15,7 +21,7 @@ async function listQuotes(req, res) {
       success: true,
       ...result,
     });
-  } catch (error) {
+  } catch {
     return res.status(500).json({
       success: false,
       message: "Failed to fetch quote requests",
@@ -59,10 +65,7 @@ async function createQuoteHandler(req, res) {
     }
 
     const quote = await createQuote({
-      name: value.name,
-      email: value.email,
-      phone: value.phone,
-      message: value.message,
+      ...value,
       productId: value.productId || null,
     });
 
@@ -72,9 +75,46 @@ async function createQuoteHandler(req, res) {
       quote,
     });
   } catch (error) {
+    if (error.statusCode === 400) {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
     return res.status(500).json({
       success: false,
       message: "Failed to submit quote request",
+    });
+  }
+}
+
+async function updateQuoteHandler(req, res) {
+  try {
+    const { error, value } = validateQuoteInput(req.body);
+
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.details[0].message,
+      });
+    }
+
+    const quote = await updateQuote(req.params.id, {
+      ...value,
+      productId: value.productId || null,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Quote request updated successfully",
+      quote,
+    });
+  } catch (error) {
+    const statusCode = error.statusCode || 500;
+    return res.status(statusCode).json({
+      success: false,
+      message: statusCode === 500 ? "Failed to update quote request" : error.message,
     });
   }
 }
@@ -106,5 +146,6 @@ module.exports = {
   listQuotes,
   getQuote,
   createQuoteHandler,
+  updateQuoteHandler,
   deleteQuoteHandler,
 };

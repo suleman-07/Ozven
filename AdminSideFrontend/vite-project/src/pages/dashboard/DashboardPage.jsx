@@ -1,16 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
-  Boxes,
   ClipboardList,
-  Factory,
   FolderTree,
-  Layers3,
   Package,
   PackagePlus,
-  PaintBucket,
   Plus,
   Quote,
-  Sparkles,
+  Tags,
   TrendingUp,
   UserRound,
 } from 'lucide-react'
@@ -31,37 +27,16 @@ const statConfig = [
   {
     key: 'totalCategories',
     label: 'Categories',
-    helper: 'Catalog groups',
+    helper: 'Top-level groups',
     icon: FolderTree,
     accent: 'bg-emerald-600',
   },
   {
-    key: 'totalIndustries',
-    label: 'Industries',
-    helper: 'Market segments',
-    icon: Factory,
+    key: 'totalSubcategories',
+    label: 'Subcategories',
+    helper: 'Product groupings',
+    icon: Tags,
     accent: 'bg-sky-600',
-  },
-  {
-    key: 'totalMaterials',
-    label: 'Materials',
-    helper: 'Packaging stocks',
-    icon: Layers3,
-    accent: 'bg-violet-600',
-  },
-  {
-    key: 'totalFinishes',
-    label: 'Finishes',
-    helper: 'Print treatments',
-    icon: Sparkles,
-    accent: 'bg-amber-600',
-  },
-  {
-    key: 'totalBoxStyles',
-    label: 'Box Styles',
-    helper: 'Available structures',
-    icon: Boxes,
-    accent: 'bg-rose-600',
   },
   {
     key: 'totalQuotes',
@@ -75,28 +50,22 @@ const statConfig = [
 const recentActivity = [
   {
     title: 'New quote request received',
-    description: 'Sarah Johnson requested pricing for Custom Mailer Box.',
+    description: 'A customer requested pricing for custom packaging.',
     time: '10 minutes ago',
     icon: Quote,
   },
   {
-    title: 'Product added',
-    description: 'Chocolate Gift Box was added to the product catalog.',
-    time: '2 hours ago',
+    title: 'Product catalog updated',
+    description: 'Products are now organized by subcategory with stock tracking.',
+    time: 'Today',
     icon: PackagePlus,
-  },
-  {
-    title: 'Finish updated',
-    description: 'Spot UV finish was marked active for product forms.',
-    time: 'Yesterday',
-    icon: PaintBucket,
   },
 ]
 
 const quickActions = [
   {
     label: 'Add Product',
-    description: 'Create a new catalog item',
+    description: 'Create a new packaging product',
     icon: Plus,
   },
   {
@@ -106,13 +75,8 @@ const quickActions = [
   },
   {
     label: 'Manage Categories',
-    description: 'Organize product taxonomy',
+    description: 'Organize categories and subcategories',
     icon: FolderTree,
-  },
-  {
-    label: 'Update Materials',
-    description: 'Maintain stock options',
-    icon: Layers3,
   },
 ]
 
@@ -122,10 +86,7 @@ function DashboardPage() {
   const [dashboardData, setDashboardData] = useState({
     totalProducts: 0,
     totalCategories: 0,
-    totalIndustries: 0,
-    totalMaterials: 0,
-    totalFinishes: 0,
-    totalBoxStyles: 0,
+    totalSubcategories: 0,
     totalQuotes: 0,
     latestProducts: [],
     latestQuotes: [],
@@ -141,13 +102,14 @@ function DashboardPage() {
       setDashboardData({
         totalProducts: payload.totalProducts || 0,
         totalCategories: payload.totalCategories || 0,
-        totalIndustries: payload.totalIndustries || 0,
-        totalMaterials: payload.totalMaterials || 0,
-        totalFinishes: payload.totalFinishes || 0,
-        totalBoxStyles: payload.totalBoxStyles || 0,
+        totalSubcategories: payload.totalSubcategories || 0,
         totalQuotes: payload.totalQuotes || 0,
-        latestProducts: Array.isArray(payload.latestProducts) ? payload.latestProducts.map(normalizeProduct) : [],
-        latestQuotes: Array.isArray(payload.latestQuotes) ? payload.latestQuotes.map(normalizeQuote) : [],
+        latestProducts: Array.isArray(payload.latestProducts)
+          ? payload.latestProducts.map(normalizeProduct)
+          : [],
+        latestQuotes: Array.isArray(payload.latestQuotes)
+          ? payload.latestQuotes.map(normalizeQuote)
+          : [],
       })
     } catch (err) {
       setError(getErrorMessage(err, 'Unable to load dashboard data right now.'))
@@ -177,7 +139,7 @@ function DashboardPage() {
     <section>
       <PageTitle
         title="Dashboard"
-        description="Production-ready admin overview with live metrics, latest records, activity, and quick actions."
+        description="Overview of packaging products, taxonomy, stock, and quote activity."
         action={
           <Button>
             <TrendingUp size={18} aria-hidden="true" />
@@ -213,9 +175,8 @@ function DashboardPage() {
                     <thead className="bg-slate-50">
                       <tr>
                         <TableHead>Product</TableHead>
-                        <TableHead>Category</TableHead>
+                        <TableHead>Subcategory</TableHead>
                         <TableHead>Status</TableHead>
-                        <TableHead>Created</TableHead>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 bg-white">
@@ -223,22 +184,27 @@ function DashboardPage() {
                         <tr key={product.id} className="hover:bg-slate-50/70">
                           <td className="whitespace-nowrap px-4 py-4">
                             <div className="flex items-center gap-3">
-                              <span className="flex size-10 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
-                                <Package size={19} aria-hidden="true" />
-                              </span>
+                              {product.image ? (
+                                <img
+                                  src={product.image}
+                                  alt=""
+                                  className="size-10 rounded-lg border border-slate-200 object-cover"
+                                />
+                              ) : (
+                                <span className="flex size-10 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
+                                  <Package size={19} aria-hidden="true" />
+                                </span>
+                              )}
                               <div>
                                 <p className="text-sm font-semibold text-slate-950">{product.name}</p>
-                                <p className="text-xs text-slate-500">
-                                  ID: PRD-{product.id.toString().padStart(3, '0')}
-                                </p>
+                                <p className="text-xs text-slate-500">{product.date}</p>
                               </div>
                             </div>
                           </td>
-                          <TableCell>{product.category}</TableCell>
+                          <TableCell>{product.subcategory}</TableCell>
                           <td className="whitespace-nowrap px-4 py-4">
                             <StatusBadge status={product.status} />
                           </td>
-                          <TableCell>{product.date}</TableCell>
                         </tr>
                       ))}
                     </tbody>
@@ -266,61 +232,57 @@ function DashboardPage() {
                   ))}
                 </div>
               ) : (
-                <EmptyState title="No quote requests" description="New quote requests will appear here." icon={InboxIcon} />
+                <EmptyState
+                  title="No quote requests"
+                  description="New quote requests will appear here."
+                  icon={ClipboardList}
+                />
               )}
             </DashboardPanel>
           </div>
 
           <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
             <DashboardPanel title="Recent Activity" description="Operational updates across the admin">
-              {recentActivity.length ? (
-                <div className="space-y-4">
-                  {recentActivity.map((activity) => {
-                    const Icon = activity.icon
+              <div className="space-y-4">
+                {recentActivity.map((activity) => {
+                  const Icon = activity.icon
 
-                    return (
-                      <div key={activity.title} className="flex gap-3 rounded-lg bg-slate-50 p-4">
-                        <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-white text-brand-600 ring-1 ring-slate-200">
-                          <Icon size={19} aria-hidden="true" />
-                        </span>
-                        <div className="min-w-0">
-                          <p className="text-sm font-semibold text-slate-950">{activity.title}</p>
-                          <p className="mt-1 text-sm leading-5 text-slate-500">{activity.description}</p>
-                          <p className="mt-2 text-xs font-medium text-slate-400">{activity.time}</p>
-                        </div>
+                  return (
+                    <div key={activity.title} className="flex gap-3 rounded-lg bg-slate-50 p-4">
+                      <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-white text-brand-600 ring-1 ring-slate-200">
+                        <Icon size={19} aria-hidden="true" />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-slate-950">{activity.title}</p>
+                        <p className="mt-1 text-sm leading-5 text-slate-500">{activity.description}</p>
+                        <p className="mt-2 text-xs font-medium text-slate-400">{activity.time}</p>
                       </div>
-                    )
-                  })}
-                </div>
-              ) : (
-                <EmptyState title="No activity yet" description="Recent admin events will appear here." icon={TrendingUp} />
-              )}
+                    </div>
+                  )
+                })}
+              </div>
             </DashboardPanel>
 
             <DashboardPanel title="Quick Actions" description="Common admin workflows">
-              {quickActions.length ? (
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {quickActions.map((action) => {
-                    const Icon = action.icon
+              <div className="grid gap-3 sm:grid-cols-2">
+                {quickActions.map((action) => {
+                  const Icon = action.icon
 
-                    return (
-                      <button
-                        key={action.label}
-                        type="button"
-                        className="rounded-lg border border-slate-200 bg-white p-4 text-left transition hover:border-brand-200 hover:bg-brand-50"
-                      >
-                        <span className="flex size-10 items-center justify-center rounded-lg bg-slate-900 text-white">
-                          <Icon size={19} aria-hidden="true" />
-                        </span>
-                        <p className="mt-4 text-sm font-semibold text-slate-950">{action.label}</p>
-                        <p className="mt-1 text-sm leading-5 text-slate-500">{action.description}</p>
-                      </button>
-                    )
-                  })}
-                </div>
-              ) : (
-                <EmptyState title="No quick actions" description="Admin shortcuts will appear here." icon={Plus} />
-              )}
+                  return (
+                    <button
+                      key={action.label}
+                      type="button"
+                      className="rounded-lg border border-slate-200 bg-white p-4 text-left transition hover:border-brand-200 hover:bg-brand-50"
+                    >
+                      <span className="flex size-10 items-center justify-center rounded-lg bg-slate-900 text-white">
+                        <Icon size={19} aria-hidden="true" />
+                      </span>
+                      <p className="mt-4 text-sm font-semibold text-slate-950">{action.label}</p>
+                      <p className="mt-1 text-sm leading-5 text-slate-500">{action.description}</p>
+                    </button>
+                  )
+                })}
+              </div>
             </DashboardPanel>
           </div>
         </div>
@@ -357,39 +319,39 @@ function TableCell({ children }) {
 }
 
 function StatusBadge({ status }) {
-  const styles = {
-    Active: 'bg-emerald-50 text-emerald-700 ring-emerald-600/10',
-    Draft: 'bg-amber-50 text-amber-700 ring-amber-600/10',
-    Inactive: 'bg-slate-100 text-slate-600 ring-slate-500/10',
-  }
+  const isActive = status === 'Active'
 
   return (
-    <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ${styles[status]}`}>
+    <span
+      className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
+        isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'
+      }`}
+    >
       {status}
     </span>
+  )
+}
+
+function EmptyState({ title, description, icon: Icon }) {
+  return (
+    <div className="py-10 text-center">
+      <span className="mx-auto flex size-12 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
+        <Icon size={24} aria-hidden="true" />
+      </span>
+      <h3 className="mt-4 text-sm font-semibold text-slate-950">{title}</h3>
+      <p className="mt-1 text-sm text-slate-500">{description}</p>
+    </div>
   )
 }
 
 function DashboardError({ message, onRetry }) {
   return (
     <div className="rounded-lg border border-slate-200 bg-white px-5 py-14 text-center shadow-sm">
-      <p className="text-sm font-semibold text-slate-950">Unable to load dashboard</p>
+      <p className="font-semibold text-slate-950">Unable to load dashboard</p>
       <p className="mt-1 text-sm text-slate-500">{message}</p>
-      <Button variant="secondary" className="mt-4" onClick={onRetry}>
+      <Button variant="secondary" className="mt-4" onClick={() => void onRetry()}>
         Try again
       </Button>
-    </div>
-  )
-}
-
-function EmptyState({ title, description, icon: Icon }) {
-  return (
-    <div className="rounded-lg border border-dashed border-slate-300 px-4 py-10 text-center">
-      <span className="mx-auto flex size-12 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
-        <Icon size={24} aria-hidden="true" />
-      </span>
-      <h3 className="mt-4 text-base font-semibold text-slate-950">{title}</h3>
-      <p className="mt-1 text-sm text-slate-500">{description}</p>
     </div>
   )
 }
@@ -398,86 +360,36 @@ function DashboardSkeleton() {
   return (
     <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {Array.from({ length: 7 }).map((_, index) => (
-          <div key={index} className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex items-start justify-between gap-4">
-              <div className="w-full">
-                <div className="h-4 w-28 animate-pulse rounded bg-slate-100" />
-                <div className="mt-3 h-7 w-16 animate-pulse rounded bg-slate-100" />
-              </div>
-              <div className="size-11 animate-pulse rounded-lg bg-slate-100" />
-            </div>
-            <div className="mt-4 h-4 w-36 animate-pulse rounded bg-slate-100" />
-          </div>
+        {Array.from({ length: 4 }).map((_, index) => (
+          <div key={index} className="h-28 animate-pulse rounded-lg border border-slate-200 bg-white" />
         ))}
       </div>
-
-      <div className="grid gap-6 xl:grid-cols-[1.45fr_1fr]">
-        <SkeletonPanel rows={4} />
-        <SkeletonPanel rows={3} />
-      </div>
-
       <div className="grid gap-6 xl:grid-cols-2">
-        <SkeletonPanel rows={3} />
-        <SkeletonPanel rows={4} />
+        <div className="h-72 animate-pulse rounded-lg border border-slate-200 bg-white" />
+        <div className="h-72 animate-pulse rounded-lg border border-slate-200 bg-white" />
       </div>
     </div>
   )
-}
-
-function SkeletonPanel({ rows }) {
-  return (
-    <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="h-5 w-40 animate-pulse rounded bg-slate-100" />
-      <div className="mt-2 h-4 w-56 animate-pulse rounded bg-slate-100" />
-      <div className="mt-6 space-y-4">
-        {Array.from({ length: rows }).map((_, index) => (
-          <div key={index} className="flex items-center gap-3">
-            <div className="size-10 animate-pulse rounded-lg bg-slate-100" />
-            <div className="flex-1">
-              <div className="h-4 w-2/3 animate-pulse rounded bg-slate-100" />
-              <div className="mt-2 h-3 w-1/2 animate-pulse rounded bg-slate-100" />
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-function InboxIcon(props) {
-  return <ClipboardList {...props} />
 }
 
 function normalizeProduct(product) {
   return {
     id: product.id,
     name: product.name || 'Untitled Product',
-    category: product.category?.name || 'Uncategorized',
-    status: mapProductStatus(product.status),
-    date: formatDate(product.createdAt, 'Not available'),
+    subcategory: product.subcategory?.name || 'Unassigned',
+    status: product.status === 'ACTIVE' ? 'Active' : 'Inactive',
+    date: formatDate(product.createdAt),
+    image: product.featuredImage || product.images?.[0]?.imageUrl || '',
   }
 }
 
 function normalizeQuote(quote) {
   return {
     id: quote.id,
-    name: quote.name || 'Unknown Contact',
-    product: quote.product?.name || 'General Quote',
-    date: formatDate(quote.createdAt, 'Not available'),
+    name: quote.name || 'Unknown customer',
+    product: quote.product?.name || 'General inquiry',
+    date: formatDate(quote.createdAt),
   }
-}
-
-function mapProductStatus(status) {
-  if (status === 'ACTIVE') {
-    return 'Active'
-  }
-
-  if (status === 'INACTIVE') {
-    return 'Inactive'
-  }
-
-  return status || 'Active'
 }
 
 export default DashboardPage

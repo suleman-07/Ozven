@@ -54,7 +54,7 @@ function LoginPage() {
           <input
             name="email"
             type="email"
-            defaultValue="admin@oxopackaging.com"
+            defaultValue="admin@example.com"
             className="mt-2 h-11 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
             required
           />
@@ -65,7 +65,7 @@ function LoginPage() {
           <input
             name="password"
             type="password"
-            defaultValue="password"
+            defaultValue="Admin@123"
             className="mt-2 h-11 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
             required
           />

@@ -6,6 +6,9 @@ const {
   createCategoryHandler,
   updateCategoryHandler,
   deleteCategoryHandler,
+  createSubcategoryHandler,
+  updateSubcategoryHandler,
+  deleteSubcategoryHandler,
 } = require("./category.controller");
 
 const router = express.Router();
@@ -16,5 +19,8 @@ router.get("/:id", getCategory);
 router.post("/", createCategoryHandler);
 router.put("/:id", updateCategoryHandler);
 router.delete("/:id", deleteCategoryHandler);
+router.post("/:categoryId/subcategories", createSubcategoryHandler);
+router.put("/:categoryId/subcategories/:subcategoryId", updateSubcategoryHandler);
+router.delete("/:categoryId/subcategories/:subcategoryId", deleteSubcategoryHandler);
 
 module.exports = router;

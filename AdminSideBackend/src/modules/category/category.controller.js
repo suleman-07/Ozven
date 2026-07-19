@@ -1,10 +1,16 @@
-const { validateCategoryInput } = require("./category.validation");
+const {
+  validateCategoryInput,
+  validateSubcategoryInput,
+} = require("./category.validation");
 const {
   getCategories,
   getCategoryById,
   createCategory,
   updateCategory,
   deleteCategory,
+  createSubcategory,
+  updateSubcategory,
+  deleteSubcategory,
 } = require("./category.service");
 
 async function listCategories(req, res) {
@@ -20,7 +26,7 @@ async function listCategories(req, res) {
       success: true,
       ...result,
     });
-  } catch (error) {
+  } catch {
     return res.status(500).json({
       success: false,
       message: "Failed to fetch categories",
@@ -63,7 +69,7 @@ async function createCategoryHandler(req, res) {
       });
     }
 
-    const category = await createCategory(value.name);
+    const category = await createCategory(value);
 
     return res.status(201).json({
       success: true,
@@ -97,7 +103,7 @@ async function updateCategoryHandler(req, res) {
       });
     }
 
-    const category = await updateCategory(req.params.id, value.name);
+    const category = await updateCategory(req.params.id, value);
 
     return res.status(200).json({
       success: true,
@@ -105,15 +111,8 @@ async function updateCategoryHandler(req, res) {
       category,
     });
   } catch (error) {
-    if (error.statusCode === 404) {
-      return res.status(404).json({
-        success: false,
-        message: error.message,
-      });
-    }
-
-    if (error.statusCode === 409) {
-      return res.status(409).json({
+    if ([400, 404, 409].includes(error.statusCode)) {
+      return res.status(error.statusCode).json({
         success: false,
         message: error.message,
       });
@@ -142,9 +141,91 @@ async function deleteCategoryHandler(req, res) {
       });
     }
 
+    if (error.statusCode === 409) {
+      return res.status(409).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
     return res.status(500).json({
       success: false,
       message: "Failed to delete category",
+    });
+  }
+}
+
+async function createSubcategoryHandler(req, res) {
+  try {
+    const { error, value } = validateSubcategoryInput(req.body);
+
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.details[0].message,
+      });
+    }
+
+    const subcategory = await createSubcategory(req.params.categoryId, value);
+
+    return res.status(201).json({
+      success: true,
+      message: "Subcategory created successfully",
+      subcategory,
+    });
+  } catch (error) {
+    const statusCode = error.statusCode || 500;
+    return res.status(statusCode).json({
+      success: false,
+      message: statusCode === 500 ? "Failed to create subcategory" : error.message,
+    });
+  }
+}
+
+async function updateSubcategoryHandler(req, res) {
+  try {
+    const { error, value } = validateSubcategoryInput(req.body);
+
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.details[0].message,
+      });
+    }
+
+    const subcategory = await updateSubcategory(
+      req.params.categoryId,
+      req.params.subcategoryId,
+      value
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Subcategory updated successfully",
+      subcategory,
+    });
+  } catch (error) {
+    const statusCode = error.statusCode || 500;
+    return res.status(statusCode).json({
+      success: false,
+      message: statusCode === 500 ? "Failed to update subcategory" : error.message,
+    });
+  }
+}
+
+async function deleteSubcategoryHandler(req, res) {
+  try {
+    await deleteSubcategory(req.params.categoryId, req.params.subcategoryId);
+
+    return res.status(200).json({
+      success: true,
+      message: "Subcategory deleted successfully",
+    });
+  } catch (error) {
+    const statusCode = error.statusCode || 500;
+    return res.status(statusCode).json({
+      success: false,
+      message: statusCode === 500 ? "Failed to delete subcategory" : error.message,
     });
   }
 }
@@ -155,4 +236,7 @@ module.exports = {
   createCategoryHandler,
   updateCategoryHandler,
   deleteCategoryHandler,
+  createSubcategoryHandler,
+  updateSubcategoryHandler,
+  deleteSubcategoryHandler,
 };

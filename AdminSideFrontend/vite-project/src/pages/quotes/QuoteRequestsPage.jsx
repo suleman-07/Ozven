@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import {
   ChevronLeft,
   ChevronRight,
+  Edit3,
   Eye,
   Inbox,
   Mail,
@@ -14,7 +15,14 @@ import toast from 'react-hot-toast'
 import PageTitle from '../../components/common/PageTitle'
 import Button from '../../components/ui/Button'
 import Modal from '../../components/ui/Modal'
-import { deleteResource, getErrorMessage, getResource, listResource, PAGE_SIZE } from '../../services/adminApi'
+import {
+  deleteResource,
+  getErrorMessage,
+  getResource,
+  listResource,
+  PAGE_SIZE,
+  updateResource,
+} from '../../services/adminApi'
 import { cn } from '../../utils/cn'
 import { formatDate } from '../../utils/formatters'
 
@@ -27,6 +35,7 @@ function QuoteRequestsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [viewingQuote, setViewingQuote] = useState(null)
+  const [editingQuote, setEditingQuote] = useState(null)
   const [deletingQuote, setDeletingQuote] = useState(null)
   const [error, setError] = useState(null)
   const [pagination, setPagination] = useState({ page: 1, limit: pageSize, total: 0, totalPages: 1 })
@@ -93,6 +102,30 @@ function QuoteRequestsPage() {
       const message = getErrorMessage(err, 'Unable to delete quote request right now.')
       setError(message)
       toast.error(message)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleEditQuote = async (quote) => {
+    try {
+      const payload = await getResource('/quotes', quote.id, 'quote')
+      setEditingQuote(normalizeQuote(payload))
+    } catch (err) {
+      toast.error(getErrorMessage(err, 'Unable to load quote request.'))
+    }
+  }
+
+  const handleUpdateQuote = async (payload) => {
+    setIsSubmitting(true)
+
+    try {
+      await updateResource('/quotes', editingQuote.id, payload)
+      setEditingQuote(null)
+      await loadQuotes(currentPage, searchTerm)
+      toast.success('Quote request updated successfully.')
+    } catch (err) {
+      toast.error(getErrorMessage(err, 'Unable to update quote request.'))
     } finally {
       setIsSubmitting(false)
     }
@@ -183,6 +216,14 @@ function QuoteRequestsPage() {
                         </button>
                         <button
                           type="button"
+                          aria-label={`Edit ${quote.name}`}
+                          className="rounded-lg border border-slate-200 p-2 text-slate-600 hover:bg-slate-50 hover:text-slate-950"
+                          onClick={() => void handleEditQuote(quote)}
+                        >
+                          <Edit3 size={17} aria-hidden="true" />
+                        </button>
+                        <button
+                          type="button"
                           aria-label={`Delete ${quote.name}`}
                           className="rounded-lg border border-red-100 p-2 text-red-600 hover:bg-red-50"
                           onClick={() => setDeletingQuote(quote)}
@@ -230,6 +271,15 @@ function QuoteRequestsPage() {
       </div>
 
       {viewingQuote ? <QuoteDetailsModal quote={viewingQuote} onClose={() => setViewingQuote(null)} /> : null}
+
+      {editingQuote ? (
+        <QuoteEditModal
+          quote={editingQuote}
+          isSubmitting={isSubmitting}
+          onClose={() => setEditingQuote(null)}
+          onSubmit={handleUpdateQuote}
+        />
+      ) : null}
 
       {deletingQuote ? (
         <DeleteQuoteModal
@@ -297,7 +347,7 @@ function QuoteDetailsModal({ quote, onClose }) {
           </span>
           <div>
             <p className="text-base font-semibold text-slate-950">{quote.name}</p>
-            <p className="mt-1 text-sm text-slate-500">{quote.company}</p>
+            <p className="mt-1 text-sm text-slate-500">{quote.product}</p>
           </div>
         </div>
 
@@ -306,6 +356,8 @@ function QuoteDetailsModal({ quote, onClose }) {
           <DetailItem icon={Phone} label="Phone" value={quote.phone} />
           <DetailItem label="Product" value={quote.product} />
           <DetailItem label="Quantity" value={quote.quantity} />
+          <DetailItem label="Color" value={quote.color} />
+          <DetailItem label="Size" value={quote.size} />
           <DetailItem label="Created Date" value={quote.createdDate} />
           <DetailItem label="Request ID" value={`QTE-${quote.id.toString().padStart(3, '0')}`} />
         </div>
@@ -334,6 +386,110 @@ function DetailItem({ icon: Icon, label, value }) {
       </p>
       <p className="mt-2 break-words text-sm font-medium text-slate-900">{value}</p>
     </div>
+  )
+}
+
+function QuoteEditModal({ quote, isSubmitting, onClose, onSubmit }) {
+  const handleSubmit = (event) => {
+    event.preventDefault()
+    const formData = new FormData(event.currentTarget)
+
+    void onSubmit({
+      name: String(formData.get('name') || '').trim(),
+      phone: String(formData.get('phone') || '').trim(),
+      email: String(formData.get('email') || '').trim(),
+      quantity: Number(formData.get('quantity')),
+      color: String(formData.get('color') || '').trim(),
+      productName: String(formData.get('productName') || '').trim(),
+      length: Number(formData.get('length')),
+      width: Number(formData.get('width')),
+      depth: Number(formData.get('depth')),
+      unit: String(formData.get('unit') || 'inch'),
+      message: String(formData.get('message') || '').trim(),
+      productId: quote.productId || null,
+    })
+  }
+
+  return (
+    <Modal title="Edit Quote Request" onClose={onClose} size="large">
+      <form className="space-y-4" onSubmit={handleSubmit}>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <EditField label="Name" name="name" defaultValue={quote.name} />
+          <EditField label="Phone" name="phone" defaultValue={quote.phone} />
+          <EditField label="Email" name="email" type="email" defaultValue={quote.email} />
+          <EditField
+            label="Quantity"
+            name="quantity"
+            type="number"
+            min="1"
+            defaultValue={quote.quantity}
+          />
+          <EditField label="Color" name="color" defaultValue={quote.color} />
+          <EditField label="Product Name" name="productName" defaultValue={quote.productName} />
+          <EditField
+            label="Length"
+            name="length"
+            type="number"
+            min="0.01"
+            step="0.01"
+            defaultValue={quote.length}
+          />
+          <EditField
+            label="Width"
+            name="width"
+            type="number"
+            min="0.01"
+            step="0.01"
+            defaultValue={quote.width}
+          />
+          <EditField
+            label="Depth"
+            name="depth"
+            type="number"
+            min="0.01"
+            step="0.01"
+            defaultValue={quote.depth}
+          />
+          <label className="block">
+            <span className="text-sm font-medium text-slate-700">Unit</span>
+            <select name="unit" defaultValue={quote.unit} className={editInputClassName}>
+              <option value="inch">inch</option>
+              <option value="cm">cm</option>
+              <option value="mm">mm</option>
+            </select>
+          </label>
+        </div>
+
+        <label className="block">
+          <span className="text-sm font-medium text-slate-700">Message</span>
+          <textarea
+            name="message"
+            defaultValue={quote.message}
+            rows={4}
+            className={`${editInputClassName} h-auto py-3`}
+            required
+          />
+        </label>
+
+        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <Button type="button" variant="secondary" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? 'Saving...' : 'Save Changes'}
+          </Button>
+        </div>
+      </form>
+    </Modal>
+  )
+}
+
+function EditField({ label, ...props }) {
+  return (
+    <label className="block">
+      <span className="text-sm font-medium text-slate-700">{label}</span>
+      <input className={editInputClassName} required {...props} />
+    </label>
   )
 }
 
@@ -371,6 +527,9 @@ function DeleteQuoteModal({ quote, isSubmitting, onClose, onDelete }) {
   )
 }
 
+const editInputClassName =
+  'mt-2 h-11 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-100'
+
 function normalizeQuote(quote) {
   return {
     ...quote,
@@ -378,9 +537,16 @@ function normalizeQuote(quote) {
     name: quote.name || 'Unknown Contact',
     email: quote.email || 'No email provided',
     phone: quote.phone || 'No phone provided',
-    product: quote.product?.name || quote.product || 'General Quote',
-    quantity: quote.quantity || 'Not provided',
-    company: quote.company || 'Not provided',
+    product: quote.productName || quote.product?.name || 'General Quote',
+    productName: quote.productName || quote.product?.name || 'General Quote',
+    productId: quote.productId || quote.product?.id || null,
+    quantity: quote.quantity ?? 'Not provided',
+    color: quote.color || 'Not specified',
+    length: quote.length ?? 0,
+    width: quote.width ?? 0,
+    depth: quote.depth ?? 0,
+    unit: quote.unit || 'inch',
+    size: `${quote.length ?? 0} × ${quote.width ?? 0} × ${quote.depth ?? 0} ${quote.unit || 'inch'}`,
     message: quote.message || 'No message provided.',
     createdDate: formatDate(quote.createdAt || quote.createdDate, 'Not available'),
   }

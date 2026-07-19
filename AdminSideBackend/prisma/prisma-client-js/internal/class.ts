@@ -22,7 +22,7 @@ const config: runtime.GetPrismaClientConfig = {
       "value": "prisma-client"
     },
     "output": {
-      "value": "D:\\Oxo Packaging\\AdminSideBackend\\prisma\\prisma-client-js",
+      "value": "D:\\Ozven\\AdminSideBackend\\prisma\\prisma-client-js",
       "fromEnvVar": null
     },
     "config": {
@@ -36,7 +36,7 @@ const config: runtime.GetPrismaClientConfig = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "D:\\Oxo Packaging\\AdminSideBackend\\prisma\\schema.prisma",
+    "sourceFilePath": "D:\\Ozven\\AdminSideBackend\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativePath": "..",

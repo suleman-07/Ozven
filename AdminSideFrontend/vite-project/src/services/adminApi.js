@@ -3,12 +3,8 @@ import api from './api'
 export const PAGE_SIZE = 5
 
 const responseKeys = {
-  '/box-styles': 'boxStyles',
   '/categories': 'categories',
   '/dashboard': 'dashboard',
-  '/finishes': 'finishes',
-  '/industries': 'industries',
-  '/materials': 'materials',
   '/products': 'products',
   '/quotes': 'quotes',
 }
@@ -77,33 +73,51 @@ export function deleteResource(endpoint, id) {
   return api.delete(`${endpoint}/${id}`)
 }
 
+export function buildProductFormData(product) {
+  const formData = new FormData()
+
+  formData.append('name', product.name.trim())
+  formData.append('description', product.description || '')
+  formData.append('status', product.status)
+  formData.append('subcategoryId', product.subcategoryId)
+
+  if (Array.isArray(product.imageFiles)) {
+    product.imageFiles.forEach((file) => {
+      if (file instanceof File) {
+        formData.append('images', file)
+      }
+    })
+  }
+
+  if (Array.isArray(product.removeImageIds) && product.removeImageIds.length) {
+    formData.append('removeImageIds', JSON.stringify(product.removeImageIds))
+  }
+
+  return formData
+}
+
 export function getDashboardData() {
   return api.get('/dashboard').then((response) => response?.data || {})
 }
 
 export async function getLookupResources() {
-  const lookupParams = { page: 1, limit: 100 }
-  const [categories, industries, materials, finishes, boxStyles] = await Promise.all([
-    listResource('/categories', lookupParams),
-    listResource('/industries', lookupParams),
-    listResource('/materials', lookupParams),
-    listResource('/finishes', lookupParams),
-    listResource('/box-styles', lookupParams),
-  ])
+  const result = await listResource('/categories', { page: 1, limit: 100 })
+  const categories = result.items
+  const subcategories = categories.flatMap((category) =>
+    (category.subcategories || []).map((subcategory) => ({
+      ...subcategory,
+      categoryId: category.id,
+      categoryName: category.name,
+      label: `${category.name} / ${subcategory.name}`,
+    })),
+  )
 
   return {
-    categories: categories.items,
-    industries: industries.items,
-    materials: materials.items,
-    finishes: finishes.items,
-    boxStyles: boxStyles.items,
+    categories,
+    subcategories,
   }
 }
 
 function singularize(value) {
-  if (value === 'boxStyles') {
-    return 'boxStyle'
-  }
-
   return value.endsWith('ies') ? `${value.slice(0, -3)}y` : value.slice(0, -1)
 }

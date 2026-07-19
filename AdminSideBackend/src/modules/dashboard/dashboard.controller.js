@@ -8,7 +8,7 @@ async function getDashboard(req, res) {
       success: true,
       ...dashboardData,
     });
-  } catch (error) {
+  } catch {
     return res.status(500).json({
       success: false,
       message: "Failed to fetch dashboard data",

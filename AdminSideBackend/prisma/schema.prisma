@@ -6,8 +6,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum ProductStatus {
@@ -25,43 +26,26 @@ model Admin {
 }
 
 model Category {
-  id        String    @id @default(uuid()) @db.Uuid
-  name      String    @unique
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  products  Product[]
+  id            String        @id @default(uuid()) @db.Uuid
+  name          String        @unique
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  subcategories Subcategory[]
 }
 
-model Industry {
-  id        String    @id @default(uuid()) @db.Uuid
-  name      String    @unique
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  products  Product[]
-}
+model Subcategory {
+  id         String   @id @default(uuid()) @db.Uuid
+  name       String
+  categoryId String   @db.Uuid
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-model BoxStyle {
-  id        String    @id @default(uuid()) @db.Uuid
-  name      String    @unique
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  products  Product[]
-}
+  category Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  products Product[]
 
-model Material {
-  id        String    @id @default(uuid()) @db.Uuid
-  name      String    @unique
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  products  Product[]
-}
-
-model Finish {
-  id        String    @id @default(uuid()) @db.Uuid
-  name      String    @unique
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  products  Product[]
+  @@unique([categoryId, name])
+  @@index([categoryId])
+  @@index([name])
 }
 
 model Product {
@@ -71,30 +55,17 @@ model Product {
   description   String?
   featuredImage String?
   status        ProductStatus @default(ACTIVE)
-  categoryId    String        @db.Uuid
-  industryId    String        @db.Uuid
-  boxStyleId    String        @db.Uuid
-  materialId    String        @db.Uuid
-  finishId      String        @db.Uuid
+  subcategoryId String        @db.Uuid
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
-  category Category @relation(fields: [categoryId], references: [id])
-  industry Industry @relation(fields: [industryId], references: [id])
-  boxStyle BoxStyle @relation(fields: [boxStyleId], references: [id])
-  material Material @relation(fields: [materialId], references: [id])
-  finish   Finish   @relation(fields: [finishId], references: [id])
-
-  images ProductImage[]
-  quotes QuoteRequest[]
+  subcategory Subcategory    @relation(fields: [subcategoryId], references: [id])
+  images      ProductImage[]
+  quotes      QuoteRequest[]
 
   @@index([name])
   @@index([status])
-  @@index([categoryId])
-  @@index([industryId])
-  @@index([boxStyleId])
-  @@index([materialId])
-  @@index([finishId])
+  @@index([subcategoryId])
 }
 
 model ProductImage {
@@ -105,19 +76,31 @@ model ProductImage {
   createdAt    DateTime @default(now())
 
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
 }
 
 model QuoteRequest {
-  id        String   @id @default(uuid()) @db.Uuid
-  name      String
-  email     String
-  phone     String
-  message   String
-  productId String?  @db.Uuid
-  createdAt DateTime @default(now())
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String
+  email       String
+  phone       String
+  quantity    Int      @default(1)
+  color       String   @default("Not specified")
+  productName String   @default("General Quote")
+  length      Float    @default(0)
+  width       Float    @default(0)
+  depth       Float    @default(0)
+  unit        String   @default("inch")
+  message     String
+  productId   String?  @db.Uuid
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
 
   product Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
 
   @@index([email])
   @@index([phone])
+  @@index([productName])
+  @@index([createdAt])
 }
