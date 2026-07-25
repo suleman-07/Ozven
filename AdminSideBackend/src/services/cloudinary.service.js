@@ -31,7 +31,38 @@ function extractPublicId(imageUrl) {
   }
 }
 
+function assertCloudinaryConfigured() {
+  const { cloudName, apiKey, apiSecret } = env.cloudinary;
+
+  if (!cloudName || !apiKey || !apiSecret) {
+    const error = new Error(
+      "Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET in .env"
+    );
+    error.statusCode = 503;
+    throw error;
+  }
+
+  if (/^your_/i.test(String(cloudName)) || String(cloudName).includes(" ")) {
+    const error = new Error(
+      "CLOUDINARY_CLOUD_NAME looks invalid. Use the Cloud name from Cloudinary Dashboard → Settings → Product environment credentials (usually lowercase)."
+    );
+    error.statusCode = 503;
+    throw error;
+  }
+}
+
+function toUploadError(error) {
+  const message = error?.message || "Image upload to Cloudinary failed";
+  const uploadError = new Error(message);
+  uploadError.statusCode =
+    error?.http_code === 401 || error?.http_code === 403 ? 502 : error?.statusCode || 502;
+  uploadError.cause = error;
+  return uploadError;
+}
+
 async function uploadImageBuffer(buffer, { folder = env.cloudinary.uploadFolder, filename } = {}) {
+  assertCloudinaryConfigured();
+
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
@@ -42,7 +73,7 @@ async function uploadImageBuffer(buffer, { folder = env.cloudinary.uploadFolder,
       },
       (error, result) => {
         if (error) {
-          reject(error);
+          reject(toUploadError(error));
           return;
         }
 

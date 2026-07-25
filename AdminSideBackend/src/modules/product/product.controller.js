@@ -77,10 +77,11 @@ async function createProductHandler(req, res) {
       product,
     });
   } catch (error) {
+    console.error("Create product failed:", error.message);
     const statusCode = error.statusCode || 500;
     return res.status(statusCode).json({
       success: false,
-      message: statusCode === 500 ? "Failed to create product" : error.message,
+      message: error.message || "Failed to create product",
     });
   }
 }
@@ -105,10 +106,11 @@ async function updateProductHandler(req, res) {
       product,
     });
   } catch (error) {
+    console.error("Update product failed:", error.message);
     const statusCode = error.statusCode || 500;
     return res.status(statusCode).json({
       success: false,
-      message: statusCode === 500 ? "Failed to update product" : error.message,
+      message: error.message || "Failed to update product",
     });
   }
 }

@@ -1,13 +1,16 @@
+const path = require("path");
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
+
+// Load .env before any modules that read process.env (Cloudinary, Prisma, JWT).
+dotenv.config({ path: path.join(__dirname, "..", ".env") });
+
 const authRoutes = require("./modules/auth/auth.routes");
 const categoryRoutes = require("./modules/category/category.routes");
 const productRoutes = require("./modules/product/product.routes");
 const quoteRoutes = require("./modules/quote/quote.routes");
 const dashboardRoutes = require("./modules/dashboard/dashboard.routes");
-
-dotenv.config();
 
 const app = express();
 
