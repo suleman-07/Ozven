@@ -7,6 +7,7 @@
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "build": "prisma generate",
+    "vercel-build": "prisma generate && prisma migrate deploy",
     "postinstall": "prisma generate",
     "release": "prisma migrate deploy",
     "lint": "eslint .",
@@ -18,7 +19,7 @@
     "prisma:seed": "node prisma/seed.js"
   },
   "engines": {
-    "node": ">=18"
+    "node": "20.x"
   },
   "keywords": [
     "node",

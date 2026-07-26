@@ -1,13 +1,18 @@
 const app = require("./app");
 
-const PORT = Number(process.env.PORT) || 5000;
-const HOST = "0.0.0.0";
+module.exports = app;
 
-const server = app.listen(PORT, HOST, () => {
-  console.log(`Server running on http://${HOST}:${PORT}`);
-});
+// Local / non-serverless only. Vercel uses api/index.js and must not call listen().
+if (require.main === module) {
+  const PORT = Number(process.env.PORT) || 5000;
+  const HOST = "0.0.0.0";
 
-server.on("error", (error) => {
-  console.error("Failed to start server:", error);
-  process.exit(1);
-});
+  const server = app.listen(PORT, HOST, () => {
+    console.log(`Server running on http://${HOST}:${PORT}`);
+  });
+
+  server.on("error", (error) => {
+    console.error("Failed to start server:", error);
+    process.exit(1);
+  });
+}
