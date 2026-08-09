@@ -25,6 +25,7 @@ import {
   listResource,
   PAGE_SIZE,
   updateResource,
+  uploadProductImages,
 } from '../../services/adminApi'
 import { cn } from '../../utils/cn'
 
@@ -133,7 +134,17 @@ function ProductPage() {
     setError(null)
 
     try {
-      const payload = buildProductFormData(buildProductPayload(product))
+      const imageFiles = Array.isArray(product.imageFiles)
+        ? product.imageFiles.filter((file) => file instanceof File)
+        : []
+      const imageUrls = imageFiles.length ? await uploadProductImages(imageFiles) : []
+      const payload = buildProductFormData(
+        buildProductPayload({
+          ...product,
+          imageFiles: [],
+          imageUrls,
+        }),
+      )
 
       if (productId) {
         await updateResource('/products', productId, payload)
@@ -494,7 +505,8 @@ function ProductModal({ title, submitLabel, product, categories, subcategories, 
               <div>
                 <p className="text-sm font-semibold text-slate-950">Product Images</p>
                 <p className="mt-1 text-sm text-slate-500">
-                  Upload one or more images. Files are stored on Cloudinary.
+              Upload one or more images. Each file is compressed and uploaded separately (avoids
+              Vercel size limits).
                 </p>
               </div>
             </div>
@@ -809,6 +821,7 @@ function buildProductPayload(product) {
     status: mapStatusValueToBackend(product.status),
     subcategoryId: product.subcategoryId,
     imageFiles: product.imageFiles || [],
+    imageUrls: product.imageUrls || [],
     removeImageIds: product.removeImageIds || [],
   }
 }

@@ -10,6 +10,10 @@ const responseKeys = {
 }
 
 export function getErrorMessage(error, fallback = 'Something went wrong. Please try again.') {
+  const status = error?.response?.status
+  if (status === 413) {
+    return 'Images are too large for one request. Try fewer or smaller images, or save again — uploads are sent one at a time.'
+  }
   return error?.response?.data?.message || error?.message || fallback
 }
 
@@ -73,6 +77,71 @@ export function deleteResource(endpoint, id) {
   return api.delete(`${endpoint}/${id}`)
 }
 
+/**
+ * Compress an image in the browser so each upload stays under Vercel's 4.5MB body limit.
+ */
+export async function compressProductImage(file, { maxWidth = 1600, maxBytes = 900_000, quality = 0.82 } = {}) {
+  if (!(file instanceof File) || !file.type.startsWith('image/')) {
+    return file
+  }
+
+  if (file.size <= maxBytes) {
+    return file
+  }
+
+  const bitmap = await createImageBitmap(file)
+  const scale = Math.min(1, maxWidth / Math.max(bitmap.width, bitmap.height))
+  const width = Math.max(1, Math.round(bitmap.width * scale))
+  const height = Math.max(1, Math.round(bitmap.height * scale))
+  const canvas = document.createElement('canvas')
+  canvas.width = width
+  canvas.height = height
+  const context = canvas.getContext('2d')
+  context.drawImage(bitmap, 0, 0, width, height)
+  bitmap.close?.()
+
+  let currentQuality = quality
+  let blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', currentQuality))
+
+  while (blob && blob.size > maxBytes && currentQuality > 0.45) {
+    currentQuality -= 0.1
+    blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', currentQuality))
+  }
+
+  if (!blob) {
+    return file
+  }
+
+  const baseName = file.name.replace(/\.[^.]+$/, '') || 'product-image'
+  return new File([blob], `${baseName}.jpg`, { type: 'image/jpeg', lastModified: Date.now() })
+}
+
+export async function uploadProductImage(file) {
+  const compressed = await compressProductImage(file)
+  const formData = new FormData()
+  formData.append('image', compressed)
+  const response = await api.post('/products/upload-image', formData)
+  const imageUrl = response?.data?.imageUrl
+
+  if (!imageUrl) {
+    throw new Error(response?.data?.message || 'Image upload failed')
+  }
+
+  return imageUrl
+}
+
+export async function uploadProductImages(files = []) {
+  const urls = []
+
+  for (const file of files) {
+    if (file instanceof File) {
+      urls.push(await uploadProductImage(file))
+    }
+  }
+
+  return urls
+}
+
 export function buildProductFormData(product) {
   const formData = new FormData()
 
@@ -81,7 +150,10 @@ export function buildProductFormData(product) {
   formData.append('status', product.status)
   formData.append('subcategoryId', product.subcategoryId)
 
-  if (Array.isArray(product.imageFiles)) {
+  // Prefer pre-uploaded Cloudinary URLs (avoids Vercel 413 on multi-image saves)
+  if (Array.isArray(product.imageUrls) && product.imageUrls.length) {
+    formData.append('imageUrls', JSON.stringify(product.imageUrls))
+  } else if (Array.isArray(product.imageFiles)) {
     product.imageFiles.forEach((file) => {
       if (file instanceof File) {
         formData.append('images', file)
