@@ -8,6 +8,7 @@ const {
   createProduct,
   updateProduct,
   deleteProduct,
+  uploadSingleProductImage,
 } = require("./product.service");
 
 async function listProducts(req, res) {
@@ -115,6 +116,34 @@ async function updateProductHandler(req, res) {
   }
 }
 
+async function uploadProductImageHandler(req, res) {
+  try {
+    const file = req.file;
+
+    if (!file) {
+      return res.status(400).json({
+        success: false,
+        message: "Image file is required",
+      });
+    }
+
+    const imageUrl = await uploadSingleProductImage(file);
+
+    return res.status(201).json({
+      success: true,
+      message: "Image uploaded successfully",
+      imageUrl,
+    });
+  } catch (error) {
+    console.error("Upload product image failed:", error.message);
+    const statusCode = error.statusCode || 500;
+    return res.status(statusCode).json({
+      success: false,
+      message: error.message || "Failed to upload image",
+    });
+  }
+}
+
 async function deleteProductHandler(req, res) {
   try {
     await deleteProduct(req.params.id);
@@ -141,6 +170,7 @@ async function deleteProductHandler(req, res) {
 module.exports = {
   listProducts,
   getProduct,
+  uploadProductImageHandler,
   createProductHandler,
   updateProductHandler,
   deleteProductHandler,

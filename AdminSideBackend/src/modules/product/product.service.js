@@ -137,6 +137,30 @@ async function getProductById(id) {
   return product;
 }
 
+async function getProductBySlug(slug) {
+  const normalizedSlug = String(slug || "")
+    .trim()
+    .toLowerCase();
+
+  if (!normalizedSlug) {
+    throw createHttpError("Product not found", 404);
+  }
+
+  const product = await prisma.product.findFirst({
+    where: {
+      slug: normalizedSlug,
+      status: "ACTIVE",
+    },
+    include: productInclude,
+  });
+
+  if (!product) {
+    throw createHttpError("Product not found", 404);
+  }
+
+  return product;
+}
+
 async function uploadProductImages(files = {}) {
   const imageFiles = [
     ...(files.images || []),
@@ -154,10 +178,20 @@ async function uploadProductImages(files = {}) {
   return uploadedUrls;
 }
 
+async function uploadSingleProductImage(file) {
+  if (!file?.buffer) {
+    throw createHttpError("Image file is required", 400);
+  }
+
+  const uploaded = await uploadImageBuffer(file.buffer);
+  return uploaded.url;
+}
+
 async function createProduct(data, files = {}) {
   await assertSubcategoryExists(data.subcategoryId);
 
-  const imageUrls = await uploadProductImages(files);
+  const uploadedFromFiles = await uploadProductImages(files);
+  const imageUrls = [...(data.imageUrls || []), ...uploadedFromFiles];
   const slug = await buildUniqueSlug(data.name);
 
   try {
@@ -219,7 +253,8 @@ async function updateProduct(id, data, files = {}) {
     });
   }
 
-  const uploadedUrls = await uploadProductImages(files);
+  const uploadedFromFiles = await uploadProductImages(files);
+  const uploadedUrls = [...(data.imageUrls || []), ...uploadedFromFiles];
 
   const remainingImages = await prisma.productImage.findMany({
     where: { productId: id },
@@ -304,6 +339,8 @@ async function deleteProduct(id) {
 module.exports = {
   getProducts,
   getProductById,
+  getProductBySlug,
+  uploadSingleProductImage,
   createProduct,
   updateProduct,
   deleteProduct,

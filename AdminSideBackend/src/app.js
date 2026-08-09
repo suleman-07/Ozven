@@ -11,10 +11,15 @@ const categoryRoutes = require("./modules/category/category.routes");
 const productRoutes = require("./modules/product/product.routes");
 const quoteRoutes = require("./modules/quote/quote.routes");
 const dashboardRoutes = require("./modules/dashboard/dashboard.routes");
+const publicRoutes = require("./modules/public/public.routes");
 
 const app = express();
 
-const defaultOrigins = ["http://localhost:3001", "http://localhost:3000"];
+const defaultOrigins = [
+  "http://localhost:3001",
+  "http://localhost:3000",
+  "http://localhost:5173",
+];
 const allowedOrigins = (process.env.CORS_ORIGIN || "")
   .split(",")
   .map((origin) => origin.trim())
@@ -51,5 +56,6 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/quotes", quoteRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/public", publicRoutes);
 
 module.exports = app;

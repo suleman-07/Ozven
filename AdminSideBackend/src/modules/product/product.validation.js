@@ -16,6 +16,9 @@ const productSchema = Joi.object({
   removeImageIds: Joi.alternatives()
     .try(Joi.array().items(Joi.string().uuid()), Joi.string().allow(""))
     .optional(),
+  imageUrls: Joi.alternatives()
+    .try(Joi.array().items(Joi.string().uri()), Joi.string().allow(""))
+    .optional(),
 });
 
 function parseRemoveImageIds(value) {
@@ -38,6 +41,28 @@ function parseRemoveImageIds(value) {
   return [];
 }
 
+function parseImageUrls(value) {
+  if (Array.isArray(value)) {
+    return value.filter((item) => typeof item === "string" && item.trim());
+  }
+
+  if (typeof value === "string" && value.trim()) {
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) {
+        return parsed.filter((item) => typeof item === "string" && item.trim());
+      }
+    } catch {
+      return value
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
+    }
+  }
+
+  return [];
+}
+
 function normalizeMultipartBody(body = {}) {
   return {
     name: body.name,
@@ -45,6 +70,7 @@ function normalizeMultipartBody(body = {}) {
     status: body.status || "ACTIVE",
     subcategoryId: body.subcategoryId,
     removeImageIds: parseRemoveImageIds(body.removeImageIds),
+    imageUrls: parseImageUrls(body.imageUrls),
   };
 }
 
@@ -58,4 +84,5 @@ function validateProductInput(payload) {
 module.exports = {
   normalizeMultipartBody,
   validateProductInput,
+  parseImageUrls,
 };

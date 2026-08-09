@@ -15,7 +15,8 @@ const upload = multer({
   storage,
   fileFilter: imageFileFilter,
   limits: {
-    fileSize: 5 * 1024 * 1024,
+    // Keep under Vercel Functions 4.5MB request body limit (multipart overhead included)
+    fileSize: 3.5 * 1024 * 1024,
     files: 12,
   },
 });
@@ -26,6 +27,8 @@ const productImageUpload = upload.fields([
   { name: "galleryImages", maxCount: 11 },
 ]);
 
+const singleProductImageUpload = upload.single("image");
+
 function handleUploadError(error, req, res, next) {
   if (!error) {
     return next();
@@ -34,7 +37,10 @@ function handleUploadError(error, req, res, next) {
   if (error instanceof multer.MulterError) {
     return res.status(400).json({
       success: false,
-      message: error.code === "LIMIT_FILE_SIZE" ? "Image must be 5MB or smaller" : error.message,
+      message:
+        error.code === "LIMIT_FILE_SIZE"
+          ? "Each image must be 3.5MB or smaller"
+          : error.message,
     });
   }
 
@@ -46,5 +52,6 @@ function handleUploadError(error, req, res, next) {
 
 module.exports = {
   productImageUpload,
+  singleProductImageUpload,
   handleUploadError,
 };
