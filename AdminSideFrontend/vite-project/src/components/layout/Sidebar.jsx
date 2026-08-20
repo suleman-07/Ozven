@@ -1,9 +1,37 @@
+import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { ChevronLeft, ChevronRight, PackageCheck, X } from 'lucide-react'
 import { navigationItems } from '../../constants/navigation'
+import { getChatUnreadCount } from '../../services/chatApi'
 import { cn } from '../../utils/cn'
 
 function Sidebar({ isCollapsed, isOpen, onClose, onToggleCollapse }) {
+  const [chatUnread, setChatUnread] = useState(0)
+
+  useEffect(() => {
+    let active = true
+
+    const loadUnread = async () => {
+      try {
+        const count = await getChatUnreadCount()
+        if (active) setChatUnread(count)
+      } catch {
+        // ignore badge failures
+      }
+    }
+
+    loadUnread()
+    const timer = window.setInterval(loadUnread, 5000)
+
+    return () => {
+      active = false
+      window.clearInterval(timer)
+    }
+  }, [])
+
+  const badgeCounts = {
+    chatUnread,
+  }
   return (
     <>
       <button
@@ -52,6 +80,7 @@ function Sidebar({ isCollapsed, isOpen, onClose, onToggleCollapse }) {
         <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-5">
           {navigationItems.map((item) => {
             const Icon = item.icon
+            const badgeCount = item.badgeKey ? badgeCounts[item.badgeKey] || 0 : 0
 
             return (
               <NavLink
@@ -69,7 +98,14 @@ function Sidebar({ isCollapsed, isOpen, onClose, onToggleCollapse }) {
                   )
                 }
               >
-                <Icon size={19} className="shrink-0" aria-hidden="true" />
+                <span className="relative shrink-0">
+                  <Icon size={19} aria-hidden="true" />
+                  {badgeCount > 0 ? (
+                    <span className="absolute -right-1.5 -top-1.5 inline-flex min-h-4 min-w-4 items-center justify-center rounded-full bg-brand-600 px-1 text-[10px] font-bold text-white">
+                      {badgeCount > 9 ? '9+' : badgeCount}
+                    </span>
+                  ) : null}
+                </span>
                 <span className={cn('truncate', isCollapsed && 'lg:hidden')}>{item.label}</span>
               </NavLink>
             )

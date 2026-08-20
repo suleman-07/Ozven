@@ -1,7 +1,8 @@
 import axios from 'axios'
+import { getPublicApiBaseUrl } from './config'
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/public',
+  baseURL: getPublicApiBaseUrl(),
   timeout: 20000,
   headers: {
     'Content-Type': 'application/json',

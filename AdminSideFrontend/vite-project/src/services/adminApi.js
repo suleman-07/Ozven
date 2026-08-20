@@ -7,6 +7,7 @@ const responseKeys = {
   '/dashboard': 'dashboard',
   '/products': 'products',
   '/quotes': 'quotes',
+  '/chat': 'conversations',
 }
 
 export function getErrorMessage(error, fallback = 'Something went wrong. Please try again.') {

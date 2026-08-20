@@ -45,6 +45,10 @@ export default {
           '0%, 100%': { transform: 'translateY(0)' },
           '50%': { transform: 'translateY(-12px)' },
         },
+        heroPulse: {
+          '0%, 100%': { transform: 'scale(1)' },
+          '50%': { transform: 'scale(1.06)' },
+        },
       },
       animation: {
         'fade-up': 'fadeUp 0.85s ease-out both',
@@ -52,6 +56,7 @@ export default {
         shimmer: 'shimmer 1.6s linear infinite',
         marquee: 'marquee 48s linear infinite',
         float: 'float 6.5s ease-in-out infinite',
+        'hero-pulse': 'heroPulse 14s ease-in-out infinite',
       },
     },
   },

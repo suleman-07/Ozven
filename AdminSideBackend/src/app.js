@@ -12,6 +12,9 @@ const productRoutes = require("./modules/product/product.routes");
 const quoteRoutes = require("./modules/quote/quote.routes");
 const dashboardRoutes = require("./modules/dashboard/dashboard.routes");
 const publicRoutes = require("./modules/public/public.routes");
+const chatRoutes = require("./modules/chat/chat.routes");
+const chatPublicRoutes = require("./modules/chat/chat.public.routes");
+const { setupChatStreams } = require("./modules/chat/chat.stream");
 
 const app = express();
 
@@ -56,6 +59,10 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/quotes", quoteRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/chat", chatRoutes);
+app.use("/api/public/chat", chatPublicRoutes);
 app.use("/api/public", publicRoutes);
+
+setupChatStreams(app);
 
 module.exports = app;

@@ -18,13 +18,29 @@ enum ProductStatus {
   INACTIVE
 }
 
+enum ConversationStatus {
+  OPEN
+  CLOSED
+}
+
+enum MessageSender {
+  VISITOR
+  ADMIN
+}
+
+enum MessageStatus {
+  SENT
+  READ
+}
+
 model Admin {
-  id        String   @id @default(uuid()) @db.Uuid
-  name      String
-  email     String   @unique
-  password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String        @id @default(uuid()) @db.Uuid
+  name         String
+  email        String        @unique
+  password     String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  chatMessages ChatMessage[]
 }
 
 model Category {
@@ -105,4 +121,37 @@ model QuoteRequest {
   @@index([phone])
   @@index([productName])
   @@index([createdAt])
+}
+
+model ChatConversation {
+  id            String             @id @default(uuid()) @db.Uuid
+  visitorToken  String             @unique
+  visitorName   String?
+  visitorEmail  String?
+  status        ConversationStatus @default(OPEN)
+  lastMessageAt DateTime           @default(now())
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  messages      ChatMessage[]
+
+  @@index([lastMessageAt])
+  @@index([visitorEmail])
+  @@index([status])
+}
+
+model ChatMessage {
+  id             String        @id @default(uuid()) @db.Uuid
+  conversationId String        @db.Uuid
+  senderType     MessageSender
+  senderAdminId  String?       @db.Uuid
+  body           String
+  status         MessageStatus @default(SENT)
+  readAt         DateTime?
+  createdAt      DateTime      @default(now())
+
+  conversation ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  admin        Admin?           @relation(fields: [senderAdminId], references: [id], onDelete: SetNull)
+
+  @@index([conversationId, createdAt])
+  @@index([conversationId, readAt])
 }

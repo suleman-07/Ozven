@@ -2,6 +2,7 @@ import {
   ChartNoAxesColumnIncreasing,
   ClipboardList,
   FolderTree,
+  MessageCircle,
   Package,
   PaintBucket,
   Settings,
@@ -27,6 +28,12 @@ export const navigationItems = [
     label: 'Quote Requests',
     path: '/quote-requests',
     icon: ClipboardList,
+  },
+  {
+    label: 'Live Support',
+    path: '/live-support',
+    icon: MessageCircle,
+    badgeKey: 'chatUnread',
   },
   {
     label: 'Settings',

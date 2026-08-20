@@ -8,6 +8,7 @@ import DashboardPage from '../pages/dashboard/DashboardPage'
 import ProductPage from '../pages/product/ProductPage'
 import GetQuotePage from '../pages/quotes/GetQuotePage'
 import QuoteRequestsPage from '../pages/quotes/QuoteRequestsPage'
+import LiveSupportPage from '../pages/chat/LiveSupportPage'
 import ModulePlaceholder from '../components/common/ModulePlaceholder'
 import ProtectedRoute from './ProtectedRoute'
 
@@ -29,6 +30,7 @@ function AppRoutes() {
               <Route path="/products" element={<ProductPage />} />
               <Route path="/categories" element={<CategoryPage />} />
               <Route path="/quote-requests" element={<QuoteRequestsPage />} />
+              <Route path="/live-support" element={<LiveSupportPage />} />
               <Route path="/settings" element={<ModulePlaceholder title="Settings" />} />
             </Route>
           </Route>

@@ -21,7 +21,7 @@ function BrandLogo({ className = '' }) {
       <img
         src="/logo-ozven.png?v=2"
         alt="Ozven Packaging"
-        className="h-12 w-auto object-contain sm:h-14"
+        className="h-12 w-auto object-contain [filter:brightness(0.88)_contrast(1.25)_drop-shadow(0_1px_1px_rgba(13,13,13,0.35))_drop-shadow(0_2px_4px_rgba(13,13,13,0.2))] sm:h-[3.75rem]"
       />
     </Link>
   )
@@ -32,16 +32,16 @@ function ContactChip({ href, icon: Icon, label, value }) {
     <a
       href={href}
       aria-label={`${label}: ${value}`}
-      className="group hidden items-center gap-3 rounded-full border border-gold-hairline/30 bg-base px-3 py-1.5 shadow-sm transition duration-200 hover:border-gold hover:shadow-md sm:inline-flex"
+      className="group hidden items-center gap-3 rounded-full border border-charcoal/15 bg-white px-3.5 py-2 transition duration-200 hover:border-gold hover:shadow-sm sm:inline-flex"
     >
-      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gold/15 text-gold transition group-hover:bg-gold group-hover:text-white">
-        <Icon className="h-3.5 w-3.5" strokeWidth={2} />
+      <span className="flex h-9 w-9 items-center justify-center rounded-full bg-charcoal/[0.08] text-charcoal transition duration-200 group-hover:bg-gold group-hover:text-dark">
+        <Icon className="h-4 w-4" strokeWidth={2.25} />
       </span>
-      <span className="pr-1">
-        <span className="block text-[10px] font-medium uppercase tracking-[0.16em] text-charcoal/45">
+      <span className="pr-1.5">
+        <span className="block text-[11px] font-semibold uppercase tracking-[0.14em] text-charcoal">
           {label}
         </span>
-        <span className="block text-sm font-semibold tracking-wide text-charcoal transition group-hover:text-dark">
+        <span className="block text-sm font-bold tracking-wide text-dark">
           {value}
         </span>
       </span>
@@ -91,7 +91,7 @@ export default function Header() {
   return (
     <header data-site-header className="sticky top-0 z-50" onMouseLeave={() => setActiveCategoryId(null)}>
       {/* Top utility bar */}
-      <div className="border-b border-gold-hairline/20 bg-base/95 backdrop-blur">
+      <div className="border-b border-charcoal/10 bg-white">
         <Container className="flex h-[4.25rem] items-center justify-between gap-4 sm:h-[4.75rem]">
           <BrandLogo />
 
@@ -111,7 +111,7 @@ export default function Header() {
 
             <Link
               to="/contact"
-              className="inline-flex items-center justify-center bg-gold px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-dark shadow-sm transition duration-200 hover:bg-gold-light hover:shadow-md sm:px-5"
+              className="inline-flex items-center justify-center bg-gold px-4 py-2.5 text-xs font-bold uppercase tracking-[0.14em] text-dark shadow-sm transition duration-200 hover:bg-gold-light hover:shadow-md sm:px-5"
             >
               Get a Quote
             </Link>
