@@ -7,7 +7,7 @@
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "build": "prisma generate",
-    "vercel-build": "prisma generate && prisma migrate deploy",
+    "vercel-build": "node scripts/vercel-build.js",
     "postinstall": "prisma generate",
     "release": "prisma migrate deploy",
     "lint": "eslint .",
