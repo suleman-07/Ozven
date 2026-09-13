@@ -12,6 +12,7 @@ async function getProfile(req, res) {
       },
     });
   } catch (error) {
+    console.error("Get profile failed:", error);
     return res.status(500).json({
       success: false,
       message: "Failed to fetch profile",
@@ -49,6 +50,7 @@ async function login(req, res) {
       });
     }
 
+    console.error("Login failed:", error);
     return res.status(500).json({
       success: false,
       message: "Login failed",

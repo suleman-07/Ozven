@@ -82,7 +82,8 @@ async function listPublicCategories(req, res) {
       categories,
       pagination: result.pagination,
     });
-  } catch {
+  } catch (error) {
+    console.error("Failed to fetch categories:", error);
     return res.status(500).json({
       success: false,
       message: "Failed to fetch categories",

@@ -1,9 +1,9 @@
-const app = require("./app");
+const { ensureDatabaseEnv } = require("./config/ensure-database-env");
 
-module.exports = app;
+async function start() {
+  await ensureDatabaseEnv();
+  const app = require("./app");
 
-// Local / non-serverless only. Vercel uses api/index.js and must not call listen().
-if (require.main === module) {
   const PORT = Number(process.env.PORT) || 5000;
   const HOST = "0.0.0.0";
 
@@ -15,4 +15,14 @@ if (require.main === module) {
     console.error("Failed to start server:", error);
     process.exit(1);
   });
+}
+
+if (require.main === module) {
+  start().catch((error) => {
+    console.error("Failed to start server:", error);
+    process.exit(1);
+  });
+} else {
+  // Imported as a module (rare). Prefer api/index.js on Vercel.
+  module.exports = require("./app");
 }

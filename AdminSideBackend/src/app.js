@@ -39,6 +39,16 @@ app.use(
         return;
       }
 
+      try {
+        const { hostname } = new URL(origin);
+        if (hostname === "vercel.app" || hostname.endsWith(".vercel.app")) {
+          callback(null, true);
+          return;
+        }
+      } catch {
+        // ignore invalid Origin
+      }
+
       callback(null, false);
     },
     credentials: true,
