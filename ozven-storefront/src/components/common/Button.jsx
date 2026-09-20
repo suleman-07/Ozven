@@ -27,7 +27,7 @@ export default function Button({
   ...props
 }) {
   const classes = [
-    'inline-flex items-center justify-center gap-2 font-medium transition duration-300',
+    'inline-flex items-center justify-center gap-2 rounded font-medium transition duration-300',
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-base',
     'disabled:cursor-not-allowed disabled:opacity-50',
     variants[variant] || variants.primary,

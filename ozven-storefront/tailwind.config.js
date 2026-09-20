@@ -45,6 +45,14 @@ export default {
           '0%, 100%': { transform: 'translateY(0)' },
           '50%': { transform: 'translateY(-12px)' },
         },
+        floatPackaging: {
+          '0%, 100%': { transform: 'translate3d(0, 0, 0) rotate(-1deg)' },
+          '50%': { transform: 'translate3d(0, -10px, 0) rotate(1deg)' },
+        },
+        floatLabel: {
+          '0%, 100%': { transform: 'translate3d(0, 0, 0) rotate(8deg)' },
+          '50%': { transform: 'translate3d(0, -7px, 0) rotate(5deg)' },
+        },
         heroPulse: {
           '0%, 100%': { transform: 'scale(1)' },
           '50%': { transform: 'scale(1.06)' },
@@ -56,6 +64,8 @@ export default {
         shimmer: 'shimmer 1.6s linear infinite',
         marquee: 'marquee 48s linear infinite',
         float: 'float 6.5s ease-in-out infinite',
+        'float-packaging': 'floatPackaging 7s ease-in-out infinite',
+        'float-label': 'floatLabel 6s ease-in-out 1s infinite',
         'hero-pulse': 'heroPulse 14s ease-in-out infinite',
       },
     },

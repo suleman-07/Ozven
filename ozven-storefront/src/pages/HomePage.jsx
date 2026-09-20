@@ -1,9 +1,12 @@
 import HeroSection from '../components/home/HeroSection'
 import TrustedBy from '../components/home/TrustedBy'
 import CategoryGrid from '../components/home/CategoryGrid'
+import PackagingBenefits from '../components/home/PackagingBenefits'
+import PremiumFinishes from '../components/home/PremiumFinishes'
 import WhyChooseUs from '../components/home/WhyChooseUs'
-import TrustBadges from '../components/home/TrustBadges'
 import TestimonialSection from '../components/home/TestimonialSection'
+import HomeQuoteSection from '../components/home/HomeQuoteSection'
+import HomeFaq from '../components/home/HomeFaq'
 import HomeCtaBanner from '../components/home/HomeCtaBanner'
 import { getCategories } from '../api'
 import useFetch from '../hooks/useFetch'
@@ -26,9 +29,12 @@ export default function HomePage() {
         error={categoriesError}
         onRetry={refetchCategories}
       />
+      <PackagingBenefits />
+      <PremiumFinishes />
       <WhyChooseUs />
-      <TrustBadges />
       <TestimonialSection />
+      <HomeQuoteSection />
+      <HomeFaq />
       <HomeCtaBanner />
     </>
   )

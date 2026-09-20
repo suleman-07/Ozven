@@ -169,6 +169,8 @@ function QuoteRequestsPage() {
                 <TableHead>Email</TableHead>
                 <TableHead>Phone</TableHead>
                 <TableHead>Product</TableHead>
+                <TableHead>Qty</TableHead>
+                <TableHead>Size</TableHead>
                 <TableHead>Created Date</TableHead>
                 <TableHead align="right">Actions</TableHead>
               </tr>
@@ -178,7 +180,7 @@ function QuoteRequestsPage() {
                 <TableSkeleton />
               ) : error ? (
                 <tr>
-                  <td colSpan="6" className="px-4 py-14 text-center">
+                  <td colSpan="8" className="px-4 py-14 text-center">
                     <p className="text-sm font-semibold text-slate-950">Unable to load quote requests</p>
                     <p className="mt-1 text-sm text-slate-500">{error}</p>
                     <Button variant="secondary" className="mt-4" onClick={() => void loadQuotes(currentPage, searchTerm)}>
@@ -203,6 +205,8 @@ function QuoteRequestsPage() {
                     <TableCell>{quote.email}</TableCell>
                     <TableCell>{quote.phone}</TableCell>
                     <TableCell>{quote.product}</TableCell>
+                    <TableCell>{quote.quantity}</TableCell>
+                    <TableCell>{quote.size}</TableCell>
                     <TableCell>{quote.createdDate}</TableCell>
                     <td className="whitespace-nowrap px-4 py-4 text-right">
                       <div className="inline-flex items-center gap-2">
@@ -314,7 +318,7 @@ function TableCell({ children }) {
 function TableSkeleton() {
   return Array.from({ length: 5 }).map((_, index) => (
     <tr key={index}>
-      {Array.from({ length: 6 }).map((__, cellIndex) => (
+      {Array.from({ length: 8 }).map((__, cellIndex) => (
         <td key={cellIndex} className="px-4 py-4">
           <div className="h-4 animate-pulse rounded bg-slate-100" />
         </td>
@@ -326,7 +330,7 @@ function TableSkeleton() {
 function EmptyState() {
   return (
     <tr>
-      <td colSpan="6" className="px-4 py-14 text-center">
+      <td colSpan="8" className="px-4 py-14 text-center">
         <span className="mx-auto flex size-12 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
           <Inbox size={24} aria-hidden="true" />
         </span>

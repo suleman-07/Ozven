@@ -11,6 +11,7 @@ import ContactPage from './pages/ContactPage'
 import ReviewsPage from './pages/ReviewsPage'
 import NotFoundPage from './pages/NotFoundPage'
 import LiveChatWidget from './components/chat/LiveChatWidget'
+import WhatsAppFloatButton from './components/common/WhatsAppFloatButton'
 
 export default function App() {
   return (
@@ -30,6 +31,7 @@ export default function App() {
         </Routes>
       </main>
       <Footer />
+      <WhatsAppFloatButton />
       <LiveChatWidget />
     </div>
   )

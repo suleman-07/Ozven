@@ -96,7 +96,7 @@ export default function SearchBar({ variant = 'onDark' }) {
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search products…"
-              className="w-40 border border-white/25 bg-dark-alt px-3 py-2 text-sm text-white outline-none transition focus:border-gold sm:w-56"
+              className="w-40 rounded border border-white/25 bg-dark-alt px-3 py-2 text-sm text-white outline-none transition focus:border-gold sm:w-56"
               aria-label="Search products by name"
               aria-expanded={searched || loading}
               aria-controls="nav-search-results"
@@ -105,7 +105,7 @@ export default function SearchBar({ variant = 'onDark' }) {
             {(loading || searched) && (
               <div
                 id="nav-search-results"
-                className="absolute right-0 top-full z-[70] mt-2 w-[min(100vw-2rem,22rem)] border border-gold-hairline/40 bg-base shadow-soft"
+                className="absolute right-0 top-full z-[70] mt-2 w-[min(100vw-2rem,22rem)] rounded-md border border-gold-hairline/40 bg-base shadow-soft"
               >
                 {loading ? (
                   <p className="px-4 py-3 text-sm text-charcoal/60">Searching…</p>

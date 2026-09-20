@@ -17,14 +17,17 @@ function withVisitorToken(visitorToken) {
   }
 }
 
-chatApi.interceptors.response.use(
+  chatApi.interceptors.response.use(
   (response) => response,
   (error) => {
+    const status = error?.response?.status
     const message =
       error?.response?.data?.message ||
       error?.message ||
       'Something went wrong. Please try again.'
-    return Promise.reject(new Error(message))
+    const err = new Error(message)
+    err.status = status
+    return Promise.reject(err)
   },
 )
 

@@ -18,14 +18,14 @@ const CLIENT_LOGOS = [
 function LogoItem({ client }) {
   return (
     <div
-      className="group flex h-12 w-[152px] shrink-0 items-center justify-center px-5 sm:h-14 sm:w-[172px] sm:px-6"
+      className="group flex h-14 w-[168px] shrink-0 items-center justify-center px-5 sm:h-16 sm:w-[196px] sm:px-7"
       title={client.name}
     >
       <img
         src={client.src}
         alt={client.name}
         loading="lazy"
-        className="h-8 w-auto max-w-[132px] object-contain opacity-70 transition duration-300 ease-out group-hover:opacity-100 group-hover:scale-[1.03] sm:h-9 sm:max-w-[148px]"
+        className="h-9 w-auto max-w-[140px] object-contain opacity-[0.82] grayscale transition duration-300 ease-out group-hover:opacity-100 group-hover:grayscale-0 group-hover:scale-[1.04] sm:h-10 sm:max-w-[160px]"
       />
     </div>
   )
@@ -43,14 +43,29 @@ function MarqueeTrack({ logos, ariaHidden = false }) {
 
 export default function TrustedBy() {
   return (
-    <section aria-label="Trusted by" className="border-y border-gold-hairline/20 bg-base">
+    <section aria-label="Trusted by" className="bg-white">
       <div className="mx-auto w-full max-w-7xl px-5 sm:px-6 lg:px-8">
-        <div className="relative overflow-hidden py-5 sm:py-6">
-          <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-12 bg-gradient-to-r from-base via-base/80 to-transparent sm:w-20" />
-          <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-12 bg-gradient-to-l from-base via-base/80 to-transparent sm:w-20" />
+        <div className="flex items-center justify-center gap-4 pt-8 sm:gap-5 sm:pt-10">
+          <span className="hidden h-px w-10 bg-gold/45 sm:block" aria-hidden />
+          <p className="text-center text-[11px] font-medium uppercase tracking-[0.28em] text-gold">
+            Trusted by growing brands
+          </p>
+          <span className="hidden h-px w-10 bg-gold/45 sm:block" aria-hidden />
+        </div>
 
-          <div className="group/marquee flex overflow-hidden">
-            <div className="flex w-max animate-marquee motion-reduce:animate-none group-hover/marquee:[animation-play-state:paused]">
+        <div className="relative overflow-hidden pt-7 pb-4 sm:pt-9 sm:pb-5">
+          <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-14 bg-gradient-to-r from-white via-white/85 to-transparent sm:w-24" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-14 bg-gradient-to-l from-white via-white/85 to-transparent sm:w-24" />
+
+          {/* Static wrap for reduced-motion users */}
+          <div className="hidden flex-wrap items-center justify-center gap-x-2 gap-y-4 motion-reduce:flex">
+            {CLIENT_LOGOS.map((client) => (
+              <LogoItem key={`static-${client.src}`} client={client} />
+            ))}
+          </div>
+
+          <div className="group/marquee flex overflow-hidden motion-reduce:hidden">
+            <div className="flex w-max animate-marquee [animation-duration:56s] group-hover/marquee:[animation-play-state:paused]">
               <MarqueeTrack logos={CLIENT_LOGOS} />
               <MarqueeTrack logos={CLIENT_LOGOS} ariaHidden />
             </div>

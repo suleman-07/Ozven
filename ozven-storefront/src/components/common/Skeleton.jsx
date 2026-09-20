@@ -24,15 +24,13 @@ export function ProductGridSkeleton({ count = 6 }) {
   )
 }
 
-export function CategoryGridSkeleton({ count = 6 }) {
+export function CategoryGridSkeleton({ count = 8 }) {
   return (
-    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid grid-cols-2 gap-x-5 gap-y-10 sm:gap-x-8 lg:grid-cols-4">
       {Array.from({ length: count }).map((_, index) => (
-        <div key={index} className="overflow-hidden border border-gold-hairline/20">
-          <Skeleton className="aspect-[16/10] w-full rounded-none" />
-          <div className="p-5">
-            <Skeleton className="h-5 w-1/2" />
-          </div>
+        <div key={index} className="text-center">
+          <Skeleton className="aspect-square w-full rounded-md" />
+          <Skeleton className="mx-auto mt-4 h-3 w-2/3" />
         </div>
       ))}
     </div>

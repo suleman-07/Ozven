@@ -16,10 +16,18 @@ const initialForm = {
   depth: '',
   unit: 'inch',
   message: '',
+  captchaAnswer: '',
+}
+
+function makeCaptcha() {
+  const a = Math.floor(Math.random() * 9) + 1
+  const b = Math.floor(Math.random() * 9) + 1
+  return { a, b, sum: a + b }
 }
 
 function GetQuotePage() {
   const [form, setForm] = useState(initialForm)
+  const [captcha, setCaptcha] = useState(makeCaptcha)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const updateField = (field, value) => {
@@ -28,21 +36,38 @@ function GetQuotePage() {
 
   const handleSubmit = async (event) => {
     event.preventDefault()
+
+    if (Number(form.captchaAnswer) !== captcha.sum) {
+      toast.error('Captcha answer is incorrect.')
+      setCaptcha(makeCaptcha())
+      updateField('captchaAnswer', '')
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
       await createResource('/quotes', {
-        ...form,
+        name: form.name.trim(),
+        phone: form.phone.trim(),
+        email: form.email.trim(),
         quantity: Number(form.quantity),
+        color: form.color.trim(),
+        productName: form.productName.trim(),
         length: Number(form.length),
         width: Number(form.width),
         depth: Number(form.depth),
+        unit: form.unit,
+        message: form.message.trim(),
       })
 
       setForm(initialForm)
+      setCaptcha(makeCaptcha())
       toast.success('Your quote request has been submitted.')
     } catch (error) {
       toast.error(getErrorMessage(error, 'Unable to submit your quote request.'))
+      setCaptcha(makeCaptcha())
+      updateField('captchaAnswer', '')
     } finally {
       setIsSubmitting(false)
     }
@@ -95,14 +120,17 @@ function GetQuotePage() {
             </div>
 
             <div className="grid gap-4 md:grid-cols-3">
-              <QuoteInput
-                label="Quantity"
-                type="number"
-                min="1"
-                value={form.quantity}
-                placeholder="Quantity"
-                onChange={(value) => updateField('quantity', value)}
-              />
+              <div className="flex items-center gap-2">
+                <span className="shrink-0 text-sm font-bold text-slate-900">Qty:</span>
+                <QuoteInput
+                  label="Quantity"
+                  type="number"
+                  min="1"
+                  value={form.quantity}
+                  placeholder="Quantity"
+                  onChange={(value) => updateField('quantity', value)}
+                />
+              </div>
               <label className="block">
                 <span className="sr-only">Select color</span>
                 <select
@@ -188,14 +216,37 @@ function GetQuotePage() {
               />
             </label>
 
-            <div className="flex justify-end">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="inline-flex h-11 min-w-11 items-center justify-center rounded-md border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-800">
+                    {captcha.a}
+                  </span>
+                  <span className="text-sm font-semibold text-slate-800">+</span>
+                  <span className="inline-flex h-11 min-w-11 items-center justify-center rounded-md border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-800">
+                    {captcha.b}
+                  </span>
+                  <span className="text-sm font-semibold text-slate-800">=</span>
+                  <input
+                    type="number"
+                    value={form.captchaAnswer}
+                    placeholder="Ans"
+                    required
+                    className={`${inputClassName} w-24`}
+                    onChange={(event) => updateField('captchaAnswer', event.target.value)}
+                    aria-label="Captcha answer"
+                  />
+                </div>
+                <p className="mt-2 text-xs text-slate-500">(Are you human, or spambot?)</p>
+              </div>
+
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-slate-900 px-6 text-sm font-bold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-[#f0c419] px-6 text-sm font-bold text-slate-900 transition hover:bg-[#e0b50f] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <Send size={17} aria-hidden="true" />
-                {isSubmitting ? 'Submitting...' : 'Get Custom Quote'}
+                {isSubmitting ? 'Submitting...' : 'Submit'}
               </button>
             </div>
           </form>
@@ -207,7 +258,7 @@ function GetQuotePage() {
 
 function QuoteInput({ label, type = 'text', value, placeholder, onChange, ...props }) {
   return (
-    <label className="block">
+    <label className="block w-full">
       <span className="sr-only">{label}</span>
       <input
         type={type}

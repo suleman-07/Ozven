@@ -61,9 +61,10 @@ export default function Header() {
     refetch: refetchCategories,
   } = useFetch(() => getCategories(), [])
 
-  const navCategories = (Array.isArray(categoriesData) ? categoriesData : []).slice(0, 3)
+  const allCategories = Array.isArray(categoriesData) ? categoriesData : []
+  const navCategories = allCategories.slice(0, 3)
   const activeCategory =
-    navCategories.find((category) => category.id === activeCategoryId) || null
+    allCategories.find((category) => category.id === activeCategoryId) || null
 
   useEffect(() => {
     setActiveCategoryId(null)
@@ -111,14 +112,14 @@ export default function Header() {
 
             <Link
               to="/contact"
-              className="inline-flex items-center justify-center bg-gold px-4 py-2.5 text-xs font-bold uppercase tracking-[0.14em] text-dark shadow-sm transition duration-200 hover:bg-gold-light hover:shadow-md sm:px-5"
+              className="inline-flex items-center justify-center rounded bg-gold px-4 py-2.5 text-xs font-bold uppercase tracking-[0.14em] text-dark shadow-sm transition duration-200 hover:bg-gold-light hover:shadow-md sm:px-5"
             >
               Get a Quote
             </Link>
 
             <button
               type="button"
-              className="inline-flex h-10 w-10 items-center justify-center border border-charcoal/15 text-charcoal transition hover:border-gold hover:text-gold lg:hidden"
+              className="inline-flex h-10 w-10 items-center justify-center rounded border border-charcoal/15 text-charcoal transition hover:border-gold hover:text-gold lg:hidden"
               aria-label="Open menu"
               onClick={() => setMobileOpen(true)}
             >
@@ -235,7 +236,7 @@ export default function Header() {
       <MobileMenu
         open={mobileOpen}
         onClose={() => setMobileOpen(false)}
-        categories={navCategories}
+        categories={allCategories}
       />
     </header>
   )
