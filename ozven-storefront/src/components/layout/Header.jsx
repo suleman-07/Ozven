@@ -17,11 +17,11 @@ import {
 
 function BrandLogo({ className = '' }) {
   return (
-    <Link to="/" className={`flex shrink-0 items-center ${className}`} aria-label="Ozven Packaging home">
+    <Link to="/" className={`flex min-w-0 shrink items-center ${className}`} aria-label="Ozven Packaging home">
       <img
         src="/logo-ozven.png?v=2"
         alt="Ozven Packaging"
-        className="h-12 w-auto object-contain [filter:brightness(0.88)_contrast(1.25)_drop-shadow(0_1px_1px_rgba(13,13,13,0.35))_drop-shadow(0_2px_4px_rgba(13,13,13,0.2))] sm:h-[3.75rem]"
+        className="h-8 w-auto max-w-[9.5rem] object-contain object-left [filter:brightness(0.88)_contrast(1.25)_drop-shadow(0_1px_1px_rgba(13,13,13,0.35))_drop-shadow(0_2px_4px_rgba(13,13,13,0.2))] sm:h-12 sm:max-w-none lg:h-[3.75rem]"
       />
     </Link>
   )
@@ -93,10 +93,10 @@ export default function Header() {
     <header data-site-header className="sticky top-0 z-50" onMouseLeave={() => setActiveCategoryId(null)}>
       {/* Top utility bar */}
       <div className="border-b border-charcoal/10 bg-white">
-        <Container className="flex h-[4.25rem] items-center justify-between gap-4 sm:h-[4.75rem]">
+        <Container className="flex h-14 items-center justify-between gap-2 sm:h-[4.75rem] sm:gap-4">
           <BrandLogo />
 
-          <div className="flex items-center gap-2.5 sm:gap-3">
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
             <ContactChip
               href={SITE_PHONE_TEL}
               icon={Phone}
@@ -112,18 +112,18 @@ export default function Header() {
 
             <Link
               to="/contact"
-              className="inline-flex items-center justify-center rounded bg-gold px-4 py-2.5 text-xs font-bold uppercase tracking-[0.14em] text-dark shadow-sm transition duration-200 hover:bg-gold-light hover:shadow-md sm:px-5"
+              className="inline-flex h-8 items-center justify-center whitespace-nowrap rounded bg-gold px-2.5 text-[10px] font-bold uppercase tracking-[0.08em] text-dark shadow-sm transition duration-200 hover:bg-gold-light hover:shadow-md sm:h-auto sm:px-5 sm:py-2.5 sm:text-xs sm:tracking-[0.14em]"
             >
               Get a Quote
             </Link>
 
             <button
               type="button"
-              className="inline-flex h-10 w-10 items-center justify-center rounded border border-charcoal/15 text-charcoal transition hover:border-gold hover:text-gold lg:hidden"
+              className="inline-flex h-8 w-8 items-center justify-center rounded border border-charcoal/15 text-charcoal transition hover:border-gold hover:text-gold sm:h-10 sm:w-10 lg:hidden"
               aria-label="Open menu"
               onClick={() => setMobileOpen(true)}
             >
-              <Menu className="h-5 w-5" />
+              <Menu className="h-4 w-4 sm:h-5 sm:w-5" />
             </button>
           </div>
         </Container>
