@@ -1,13 +1,19 @@
 import { useMemo } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import Breadcrumb from '../components/common/Breadcrumb'
+import CategoryHero from '../components/common/CategoryHero'
 import Container from '../components/common/Container'
 import ErrorMessage from '../components/common/ErrorMessage'
 import { CategoryGridSkeleton, ProductGridSkeleton } from '../components/common/Skeleton'
 import ProductGrid from '../components/product/ProductGrid'
 import { getCategories, getProducts } from '../api'
 import useFetch from '../hooks/useFetch'
-import { getCategoryImage, slugify } from '../utils/catalog'
+import {
+  getCategoryDescription,
+  getCategoryImage,
+  getCategoryLabel,
+  slugify,
+} from '../utils/catalog'
 
 export default function CategoryPage() {
   const { categorySlug } = useParams()
@@ -19,10 +25,11 @@ export default function CategoryPage() {
     refetch: refetchCategories,
   } = useFetch(() => getCategories(), [])
 
+  const categoryList = Array.isArray(categories) ? categories : []
+
   const category = useMemo(() => {
-    const list = Array.isArray(categories) ? categories : []
-    return list.find((item) => (item.slug || slugify(item.name)) === categorySlug) || null
-  }, [categories, categorySlug])
+    return categoryList.find((item) => (item.slug || slugify(item.name)) === categorySlug) || null
+  }, [categoryList, categorySlug])
 
   const subcategories = category?.subcategories || []
   const hasSubcategories = subcategories.length > 0
@@ -74,12 +81,11 @@ export default function CategoryPage() {
     <>
       <Breadcrumb items={[{ label: 'Home', to: '/' }, { label: category.name }]} />
 
-      <section className="bg-dark py-14 text-base sm:py-16">
-        <Container>
-          <p className="text-xs uppercase tracking-[0.28em] text-gold">Category</p>
-          <h1 className="mt-4 font-display text-4xl sm:text-5xl">{category.name}</h1>
-        </Container>
-      </section>
+      <CategoryHero
+        label={getCategoryLabel(category.name)}
+        title={category.name}
+        description={getCategoryDescription(category.name)}
+      />
 
       <section className="py-14 sm:py-16">
         <Container>

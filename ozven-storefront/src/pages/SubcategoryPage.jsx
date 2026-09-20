@@ -1,13 +1,18 @@
 import { useMemo } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import Breadcrumb from '../components/common/Breadcrumb'
+import CategoryHero from '../components/common/CategoryHero'
 import Container from '../components/common/Container'
 import ErrorMessage from '../components/common/ErrorMessage'
 import { ProductGridSkeleton } from '../components/common/Skeleton'
 import ProductGrid from '../components/product/ProductGrid'
 import { getCategories, getProducts } from '../api'
 import useFetch from '../hooks/useFetch'
-import { slugify } from '../utils/catalog'
+import {
+  getCategoryDescription,
+  getCategoryLabel,
+  slugify,
+} from '../utils/catalog'
 
 export default function SubcategoryPage() {
   const { categorySlug, subcategorySlug } = useParams()
@@ -85,12 +90,11 @@ export default function SubcategoryPage() {
         ]}
       />
 
-      <section className="bg-dark py-14 text-base sm:py-16">
-        <Container>
-          <p className="text-xs uppercase tracking-[0.28em] text-gold">{category.name}</p>
-          <h1 className="mt-4 font-display text-4xl sm:text-5xl">{subcategory.name}</h1>
-        </Container>
-      </section>
+      <CategoryHero
+        label={getCategoryLabel(category.name)}
+        title={subcategory.name}
+        description={getCategoryDescription(subcategory.name, category.name)}
+      />
 
       <section className="py-14 sm:py-16">
         <Container>
