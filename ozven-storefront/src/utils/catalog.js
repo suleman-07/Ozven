@@ -32,5 +32,14 @@ export function getProductImage(product) {
 }
 
 export function getCategoryImage(category) {
-  return category?.image || category?.imageUrl || category?.featuredImage || null
+  const direct = category?.image || category?.imageUrl || category?.featuredImage
+  if (direct) return direct
+
+  const subs = Array.isArray(category?.subcategories) ? category.subcategories : []
+  for (const sub of subs) {
+    const image = sub?.image || sub?.imageUrl || sub?.featuredImage
+    if (image) return image
+  }
+
+  return null
 }

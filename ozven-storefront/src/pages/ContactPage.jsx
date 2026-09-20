@@ -1,19 +1,9 @@
-import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Mail, MapPin, Phone } from 'lucide-react'
 import Breadcrumb from '../components/common/Breadcrumb'
-import Button from '../components/common/Button'
 import Container from '../components/common/Container'
+import QuoteForm from '../components/common/QuoteForm'
 import SectionHeading from '../components/common/SectionHeading'
-import { createQuote } from '../api'
-
-const initialForm = {
-  name: '',
-  email: '',
-  phone: '',
-  message: '',
-  productName: 'General Quote',
-}
 
 const contactInfo = [
   {
@@ -36,57 +26,17 @@ const contactInfo = [
   },
 ]
 
-const fieldClassName =
-  'w-full border border-gold-hairline/30 bg-base px-3 py-2.5 text-sm text-charcoal outline-none transition focus:border-gold'
-
 export default function ContactPage() {
   const [searchParams] = useSearchParams()
-  const prefillProduct = searchParams.get('productName') || 'General Quote'
+  const prefillProduct = searchParams.get('productName') || ''
   const prefillProductId = searchParams.get('productId') || ''
-
-  const [form, setForm] = useState({
-    ...initialForm,
-    productName: prefillProduct,
-  })
-  const [submitting, setSubmitting] = useState(false)
-  const [success, setSuccess] = useState(false)
-  const [error, setError] = useState('')
-
-  const onChange = (event) => {
-    const { name, value } = event.target
-    setForm((current) => ({ ...current, [name]: value }))
-  }
-
-  const onSubmit = async (event) => {
-    event.preventDefault()
-    setSubmitting(true)
-    setError('')
-    setSuccess(false)
-
-    try {
-      await createQuote({
-        name: form.name,
-        email: form.email,
-        phone: form.phone,
-        message: form.message,
-        productName: form.productName || 'General Quote',
-        productId: prefillProductId || undefined,
-      })
-      setSuccess(true)
-      setForm({ ...initialForm, productName: prefillProduct })
-    } catch (err) {
-      setError(err?.message || 'Unable to submit quote right now.')
-    } finally {
-      setSubmitting(false)
-    }
-  }
 
   return (
     <>
       <Breadcrumb items={[{ label: 'Home', to: '/' }, { label: 'Contact' }]} />
 
       <section className="bg-base py-14 sm:py-20">
-        <Container className="grid gap-12 lg:grid-cols-[0.95fr_1.15fr] lg:gap-16">
+        <Container className="grid gap-12 lg:grid-cols-[0.9fr_1.2fr] lg:gap-16">
           <div>
             <SectionHeading
               eyebrow="Contact"
@@ -98,7 +48,7 @@ export default function ContactPage() {
               {contactInfo.map(({ icon: Icon, label, value, href }) => (
                 <li
                   key={label}
-                  className="flex gap-4 border border-gold-hairline/25 bg-base px-5 py-4"
+                  className="flex gap-4 rounded border border-gold-hairline/25 bg-base px-5 py-4"
                 >
                   <span className="mt-0.5 inline-flex text-gold">
                     <Icon className="h-5 w-5" strokeWidth={1.6} />
@@ -118,101 +68,13 @@ export default function ContactPage() {
             </ul>
           </div>
 
-          <div className="border border-gold-hairline/30 bg-base p-6 shadow-soft sm:p-8">
-            <h2 className="font-display text-2xl text-charcoal sm:text-3xl">Request a quote</h2>
-            <p className="mt-2 text-sm text-charcoal/65">
-              Submissions go to the public quotes API.
-            </p>
-
-            {success ? (
-              <div className="mt-8 border border-emerald/30 bg-emerald/[0.06] px-5 py-6 text-sm text-emerald">
-                Quote request submitted successfully. We’ll be in touch soon.
-              </div>
-            ) : null}
-            {error ? (
-              <div className="mt-8 border border-gold-hairline/40 px-5 py-4 text-sm text-charcoal" role="alert">
-                {error}
-              </div>
-            ) : null}
-
-            <form className="mt-8 space-y-5" onSubmit={onSubmit}>
-              <label className="block text-sm">
-                <span className="mb-2 block text-xs uppercase tracking-[0.16em] text-charcoal/50">
-                  Name
-                </span>
-                <input
-                  name="name"
-                  type="text"
-                  required
-                  minLength={2}
-                  value={form.name}
-                  onChange={onChange}
-                  className={fieldClassName}
-                />
-              </label>
-
-              <label className="block text-sm">
-                <span className="mb-2 block text-xs uppercase tracking-[0.16em] text-charcoal/50">
-                  Email
-                </span>
-                <input
-                  name="email"
-                  type="email"
-                  required
-                  value={form.email}
-                  onChange={onChange}
-                  className={fieldClassName}
-                />
-              </label>
-
-              <label className="block text-sm">
-                <span className="mb-2 block text-xs uppercase tracking-[0.16em] text-charcoal/50">
-                  Phone
-                </span>
-                <input
-                  name="phone"
-                  type="tel"
-                  required
-                  minLength={7}
-                  value={form.phone}
-                  onChange={onChange}
-                  className={fieldClassName}
-                />
-              </label>
-
-              <label className="block text-sm">
-                <span className="mb-2 block text-xs uppercase tracking-[0.16em] text-charcoal/50">
-                  Product
-                </span>
-                <input
-                  name="productName"
-                  type="text"
-                  required
-                  value={form.productName}
-                  onChange={onChange}
-                  className={fieldClassName}
-                />
-              </label>
-
-              <label className="block text-sm">
-                <span className="mb-2 block text-xs uppercase tracking-[0.16em] text-charcoal/50">
-                  Message
-                </span>
-                <textarea
-                  name="message"
-                  required
-                  minLength={5}
-                  rows={5}
-                  value={form.message}
-                  onChange={onChange}
-                  className={`${fieldClassName} resize-y`}
-                />
-              </label>
-
-              <Button type="submit" size="lg" disabled={submitting} className="w-full sm:w-auto">
-                {submitting ? 'Sending…' : 'Send quote request'}
-              </Button>
-            </form>
+          <div className="rounded-md border border-gold-hairline/30 bg-white p-6 shadow-soft sm:p-8">
+            <QuoteForm
+              showHeader
+              defaultProductName={prefillProduct}
+              productId={prefillProductId}
+              submitLabel="Submit"
+            />
           </div>
         </Container>
       </section>

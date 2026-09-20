@@ -1,73 +1,91 @@
 import {
   BadgeCheck,
   Leaf,
-  Package,
   Palette,
-  ShieldCheck,
+  Printer,
+  Ruler,
+  Sparkles,
+  Tag,
   Truck,
 } from 'lucide-react'
 import Container from '../common/Container'
-import SectionHeading from '../common/SectionHeading'
 
-const reasons = [
+const features = [
   {
-    icon: Package,
-    title: 'Structural expertise',
-    copy: 'Boxes engineered for protection, presentation, and efficient packing.',
-  },
-  {
-    icon: Palette,
-    title: 'Brand-true finishes',
-    copy: 'Color-managed print and premium finishes that stay consistent at scale.',
+    icon: Ruler,
+    title: 'Custom size & shape',
+    copy: 'Structures built around your product, shelf, and packing line.',
   },
   {
     icon: Leaf,
     title: 'Responsible materials',
-    copy: 'Recycled and FSC-ready stocks available without compromising feel.',
+    copy: 'Board and kraft options that feel premium without excess waste.',
+  },
+  {
+    icon: Printer,
+    title: 'Color-true printing',
+    copy: 'Managed print so brand artwork stays sharp from proof to run.',
+  },
+  {
+    icon: Sparkles,
+    title: 'Premium finishes',
+    copy: 'Foil, emboss, spot UV, and soft-touch for a stronger unboxing.',
   },
   {
     icon: Truck,
-    title: 'Reliable timelines',
-    copy: 'Clear production windows from sample approval through delivery.',
+    title: 'Reliable delivery',
+    copy: 'Clear production windows timed to your launch schedule.',
   },
   {
-    icon: ShieldCheck,
-    title: 'Quality control',
-    copy: 'Checks at proofing and production so every unit ships with confidence.',
+    icon: Palette,
+    title: 'Design support',
+    copy: 'Artwork guidance and proofing from brief to final approval.',
   },
   {
     icon: BadgeCheck,
-    title: 'Dedicated support',
-    copy: 'Design guidance and quoting support from brief to first shipment.',
+    title: 'Quality control',
+    copy: 'Checks at proof and production before anything ships.',
+  },
+  {
+    icon: Tag,
+    title: 'Transparent pricing',
+    copy: 'Straightforward quotes with minimums that fit growing brands.',
   },
 ]
 
 export default function WhyChooseUs() {
   return (
-    <section className="bg-base py-20 sm:py-24">
+    <section className="border-t border-charcoal/8 bg-white py-16 sm:py-20">
       <Container>
-        <SectionHeading
-          align="center"
-          eyebrow="Why Choose Us"
-          title="Six reasons brands choose Ozven"
-          description="From structure to finishing — every detail is built to protect the product and elevate the brand."
-          className="mb-14"
-        />
-
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {reasons.map(({ icon: Icon, title, copy }) => (
-            <article
-              key={title}
-              className="border border-gold-hairline/25 bg-base px-6 py-8 transition hover:border-gold"
-            >
-              <div className="inline-flex h-11 w-11 items-center justify-center border border-gold-hairline/40 text-gold">
-                <Icon className="h-5 w-5" strokeWidth={1.6} />
-              </div>
-              <h3 className="mt-5 font-display text-xl text-charcoal">{title}</h3>
-              <p className="mt-3 text-sm leading-relaxed text-charcoal/70">{copy}</p>
-            </article>
-          ))}
+        <div className="mx-auto max-w-3xl text-center">
+          <p className="text-[11px] font-medium uppercase tracking-[0.28em] text-gold">
+            Why Ozven
+          </p>
+          <h2 className="mt-3 font-display text-3xl leading-tight text-charcoal sm:text-4xl">
+            Packaging support that protects the product and the brand
+          </h2>
+          <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-charcoal sm:text-[0.95rem]">
+            From structure to finishing, every detail is built for a clean launch and a lasting
+            first impression.
+          </p>
         </div>
+
+        <ul className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
+          {features.map(({ icon: Icon, title, copy }) => (
+            <li
+              key={title}
+              className="group rounded-md border border-charcoal/10 bg-base px-5 py-6 transition duration-300 hover:border-gold/45 hover:bg-white hover:shadow-soft"
+            >
+              <span className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gold/45 text-gold transition duration-300 group-hover:bg-gold group-hover:text-dark">
+                <Icon className="h-5 w-5" strokeWidth={1.6} />
+              </span>
+              <h3 className="mt-5 text-sm font-semibold text-charcoal">{title}</h3>
+              <p className="mt-2 text-xs leading-relaxed text-charcoal/70 sm:text-[0.8rem]">
+                {copy}
+              </p>
+            </li>
+          ))}
+        </ul>
       </Container>
     </section>
   )

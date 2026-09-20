@@ -24,7 +24,7 @@ export default function ProductCard({ product }) {
           </div>
         )}
         <div className="absolute inset-0 flex items-center justify-center bg-dark/55 opacity-0 transition duration-300 group-hover:opacity-100">
-          <span className="border border-gold px-4 py-2 text-xs font-medium uppercase tracking-[0.18em] text-gold">
+          <span className="rounded border border-gold px-4 py-2 text-xs font-medium uppercase tracking-[0.18em] text-gold">
             View Details
           </span>
         </div>

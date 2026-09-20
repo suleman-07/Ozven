@@ -114,7 +114,7 @@ export default function ProductListingPage() {
                     type="button"
                     disabled={filters.page <= 1}
                     onClick={() => goToPage(filters.page - 1)}
-                    className="border border-gold-hairline/40 px-4 py-2 text-sm text-charcoal disabled:opacity-40"
+                    className="rounded border border-gold-hairline/40 px-4 py-2 text-sm text-charcoal disabled:opacity-40"
                   >
                     Previous
                   </button>
@@ -125,7 +125,7 @@ export default function ProductListingPage() {
                     type="button"
                     disabled={filters.page >= pagination.totalPages}
                     onClick={() => goToPage(filters.page + 1)}
-                    className="border border-gold-hairline/40 px-4 py-2 text-sm text-charcoal disabled:opacity-40"
+                    className="rounded border border-gold-hairline/40 px-4 py-2 text-sm text-charcoal disabled:opacity-40"
                   >
                     Next
                   </button>

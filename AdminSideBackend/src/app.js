@@ -22,13 +22,18 @@ const defaultOrigins = [
   "http://localhost:3001",
   "http://localhost:3000",
   "http://localhost:5173",
+  "http://127.0.0.1:3001",
+  "http://127.0.0.1:3000",
+  "http://127.0.0.1:5173",
 ];
-const allowedOrigins = (process.env.CORS_ORIGIN || "")
+const envOrigins = (process.env.CORS_ORIGIN || "")
   .split(",")
   .map((origin) => origin.trim())
   .filter(Boolean);
 
-const corsOrigins = allowedOrigins.length > 0 ? allowedOrigins : defaultOrigins;
+// Always keep local defaults so storefront (Vite :5173) still works when
+// CORS_ORIGIN is set only to the admin frontend (e.g. :3001).
+const corsOrigins = [...new Set([...defaultOrigins, ...envOrigins])];
 
 app.use(
   cors({
@@ -42,6 +47,15 @@ app.use(
       try {
         const { hostname } = new URL(origin);
         if (hostname === "vercel.app" || hostname.endsWith(".vercel.app")) {
+          callback(null, true);
+          return;
+        }
+
+        // Local Vite/dev servers often pick an alternate port (5174, etc.)
+        if (
+          process.env.NODE_ENV !== "production" &&
+          (hostname === "localhost" || hostname === "127.0.0.1")
+        ) {
           callback(null, true);
           return;
         }

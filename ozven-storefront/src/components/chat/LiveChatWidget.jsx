@@ -8,6 +8,7 @@ import {
   startChatConversation,
 } from '../../api/chat'
 import {
+  clearChatSession,
   getConversationId,
   getVisitorProfile,
   getVisitorToken,
@@ -15,7 +16,15 @@ import {
   saveChatSession,
 } from '../../utils/chatSession'
 
-const POLL_INTERVAL_MS = 2500
+function isGoneSessionError(err) {
+  if (err?.status === 404 || err?.status === 403) return true
+  const message = String(err?.message || '').toLowerCase()
+  return message.includes('not found') || message.includes('unauthorized')
+}
+
+const POLL_OPEN_MS = 4000
+const POLL_CLOSED_MS = 30000
+const POLL_MAX_BACKOFF_MS = 60000
 
 function formatTime(value) {
   if (!value) return ''
@@ -48,18 +57,35 @@ export default function LiveChatWidget() {
   const [unreadCount, setUnreadCount] = useState(0)
 
   const messagesEndRef = useRef(null)
-  const pollRef = useRef(null)
   const streamRef = useRef(null)
   const lastMessageAtRef = useRef(null)
+  const isOpenRef = useRef(isOpen)
+  const pollTimerRef = useRef(null)
+  const consecutiveErrorsRef = useRef(0)
+  const sseHealthyRef = useRef(false)
+
+  useEffect(() => {
+    isOpenRef.current = isOpen
+  }, [isOpen])
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [])
 
-  const loadMessages = useCallback(
-    async ({ markRead = false, since } = {}) => {
-      if (!conversationId || !visitorToken) return
+  const resetStaleSession = useCallback(() => {
+    clearChatSession()
+    setConversationId('')
+    setVisitorToken('')
+    setMessages([])
+    setUnreadCount(0)
+    setStep('intro')
+    lastMessageAtRef.current = null
+  }, [])
 
+  const loadMessages = useCallback(async ({ markRead = false, since } = {}) => {
+    if (!conversationId || !visitorToken) return
+
+    try {
       const result = await fetchChatMessages(conversationId, visitorToken, since)
       setMessages((current) => mergeMessages(current, result.messages))
       setUnreadCount(result.unreadCount)
@@ -68,7 +94,7 @@ export default function LiveChatWidget() {
         lastMessageAtRef.current = result.messages[result.messages.length - 1].createdAt
       }
 
-      if (markRead && isOpen) {
+      if (markRead && isOpenRef.current) {
         await markChatMessagesRead(conversationId, visitorToken)
         setUnreadCount(0)
         setMessages((current) =>
@@ -79,9 +105,14 @@ export default function LiveChatWidget() {
           ),
         )
       }
-    },
-    [conversationId, isOpen, visitorToken],
-  )
+    } catch (err) {
+      if (isGoneSessionError(err)) {
+        resetStaleSession()
+        return
+      }
+      throw err
+    }
+  }, [conversationId, resetStaleSession, visitorToken])
 
   const handleStartChat = async (event) => {
     event.preventDefault()
@@ -161,28 +192,67 @@ export default function LiveChatWidget() {
   useEffect(() => {
     if (!conversationId || !visitorToken) return undefined
 
-    const startPolling = () => {
-      if (pollRef.current) return
-      pollRef.current = window.setInterval(() => {
-        loadMessages({
-          markRead: isOpen,
-          since: lastMessageAtRef.current || undefined,
-        }).catch(() => {})
-      }, POLL_INTERVAL_MS)
+    let cancelled = false
+
+    const clearPoll = () => {
+      if (pollTimerRef.current) {
+        window.clearTimeout(pollTimerRef.current)
+        pollTimerRef.current = null
+      }
     }
 
-    startPolling()
+    const nextDelay = () => {
+      const errors = consecutiveErrorsRef.current
+      if (errors > 0) {
+        return Math.min(POLL_MAX_BACKOFF_MS, POLL_OPEN_MS * 2 ** Math.min(errors, 5))
+      }
+      return isOpenRef.current ? POLL_OPEN_MS : POLL_CLOSED_MS
+    }
+
+    const schedulePoll = (delay = nextDelay()) => {
+      clearPoll()
+      if (cancelled || sseHealthyRef.current) return
+
+      pollTimerRef.current = window.setTimeout(async () => {
+        if (cancelled) return
+        try {
+          await loadMessages({
+            markRead: isOpenRef.current,
+            since: lastMessageAtRef.current || undefined,
+          })
+          consecutiveErrorsRef.current = 0
+        } catch {
+          consecutiveErrorsRef.current += 1
+        }
+
+        // Stop hammering the API after repeated failures while chat is closed.
+        if (consecutiveErrorsRef.current >= 6 && !isOpenRef.current) {
+          return
+        }
+
+        schedulePoll()
+      }, delay)
+    }
+
+    sseHealthyRef.current = false
+    consecutiveErrorsRef.current = 0
 
     try {
       const streamUrl = getChatStreamUrl(visitorToken, conversationId)
       const stream = new EventSource(streamUrl)
       streamRef.current = stream
 
+      stream.onopen = () => {
+        sseHealthyRef.current = true
+        consecutiveErrorsRef.current = 0
+        clearPoll()
+      }
+
       stream.onmessage = (event) => {
         try {
           const payload = JSON.parse(event.data)
           if (payload.type === 'message_created' || payload.type === 'messages_read') {
-            loadMessages({ markRead: isOpen }).catch(() => {})
+            loadMessages({ markRead: isOpenRef.current }).catch(() => {})
           }
         } catch {
           // ignore malformed events
@@ -190,42 +260,45 @@ export default function LiveChatWidget() {
       }
 
       stream.onerror = () => {
-        stream.close()
-        streamRef.current = null
-        startPolling()
+        sseHealthyRef.current = false
+        if (streamRef.current) {
+          streamRef.current.close()
+          streamRef.current = null
+        }
+        // Fallback polling only after SSE fails — with backoff on errors.
+        schedulePoll(Math.min(2000, nextDelay()))
       }
     } catch {
-      startPolling()
+      schedulePoll(0)
     }
 
+    // If SSE never opens, start slow fallback polling.
+    const fallbackTimer = window.setTimeout(() => {
+      if (!cancelled && !sseHealthyRef.current) {
+        schedulePoll(0)
+      }
+    }, 2500)
+
     return () => {
+      cancelled = true
+      window.clearTimeout(fallbackTimer)
+      clearPoll()
       if (streamRef.current) {
         streamRef.current.close()
         streamRef.current = null
       }
-      if (pollRef.current) {
-        window.clearInterval(pollRef.current)
-        pollRef.current = null
-      }
+      sseHealthyRef.current = false
     }
-  }, [conversationId, isOpen, loadMessages, visitorToken])
+  }, [conversationId, loadMessages, visitorToken])
 
   useEffect(() => {
     if (isOpen) scrollToBottom()
   }, [isOpen, messages, scrollToBottom])
 
-  useEffect(() => {
-    if (!isOpen && conversationId && visitorToken) {
-      fetchChatMessages(conversationId, visitorToken)
-        .then((result) => setUnreadCount(result.unreadCount))
-        .catch(() => {})
-    }
-  }, [conversationId, isOpen, visitorToken])
-
   return (
     <div className="fixed bottom-5 right-5 z-[60] flex flex-col items-end gap-3 sm:bottom-6 sm:right-6">
       {isOpen ? (
-        <div className="flex w-[min(100vw-2rem,22rem)] flex-col overflow-hidden border border-gold-hairline/30 bg-base shadow-[0_24px_60px_rgba(13,13,13,0.22)] sm:w-[24rem]">
+        <div className="flex w-[min(100vw-2rem,22rem)] flex-col overflow-hidden rounded-md border border-gold-hairline/30 bg-base shadow-[0_24px_60px_rgba(13,13,13,0.22)] sm:w-[24rem]">
           <div className="flex items-center justify-between bg-dark px-4 py-3 text-base">
             <div>
               <p className="text-sm font-semibold">Live Support</p>
@@ -234,7 +307,7 @@ export default function LiveChatWidget() {
             <button
               type="button"
               aria-label="Close chat"
-              className="inline-flex h-8 w-8 items-center justify-center text-base/70 transition hover:text-gold"
+              className="inline-flex h-8 w-8 items-center justify-center rounded text-base/70 transition hover:text-gold"
               onClick={() => setIsOpen(false)}
             >
               <X className="h-4 w-4" />
@@ -254,7 +327,7 @@ export default function LiveChatWidget() {
                   required
                   value={name}
                   onChange={(event) => setName(event.target.value)}
-                  className="w-full border border-gold-hairline/30 bg-white px-3 py-2.5 text-sm text-charcoal outline-none transition focus:border-gold"
+                  className="w-full rounded border border-gold-hairline/30 bg-white px-3 py-2.5 text-sm text-charcoal outline-none transition focus:border-gold"
                   placeholder="Your name"
                 />
               </label>
@@ -267,7 +340,7 @@ export default function LiveChatWidget() {
                   type="email"
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
-                  className="w-full border border-gold-hairline/30 bg-white px-3 py-2.5 text-sm text-charcoal outline-none transition focus:border-gold"
+                  className="w-full rounded border border-gold-hairline/30 bg-white px-3 py-2.5 text-sm text-charcoal outline-none transition focus:border-gold"
                   placeholder="you@company.com"
                 />
               </label>
@@ -275,7 +348,7 @@ export default function LiveChatWidget() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="inline-flex w-full items-center justify-center gap-2 bg-gold px-4 py-3 text-sm font-semibold text-dark transition hover:bg-gold-light disabled:opacity-60"
+                className="inline-flex w-full items-center justify-center gap-2 rounded bg-gold px-4 py-3 text-sm font-semibold text-dark transition hover:bg-gold-light disabled:opacity-60"
               >
                 Start Chat
               </button>
@@ -299,7 +372,7 @@ export default function LiveChatWidget() {
                       className={`flex ${isVisitor ? 'justify-end' : 'justify-start'}`}
                     >
                       <div
-                        className={`max-w-[85%] px-3 py-2.5 text-sm leading-relaxed ${
+                        className={`max-w-[85%] rounded px-3 py-2.5 text-sm leading-relaxed ${
                           isVisitor
                             ? 'bg-dark text-base'
                             : 'border border-gold-hairline/25 bg-white text-charcoal'
@@ -336,13 +409,13 @@ export default function LiveChatWidget() {
                     value={draft}
                     onChange={(event) => setDraft(event.target.value)}
                     placeholder="Type your message…"
-                    className="min-h-[2.75rem] flex-1 resize-none border border-gold-hairline/30 px-3 py-2 text-sm text-charcoal outline-none transition focus:border-gold"
+                    className="min-h-[2.75rem] flex-1 resize-none rounded border border-gold-hairline/30 px-3 py-2 text-sm text-charcoal outline-none transition focus:border-gold"
                   />
                   <button
                     type="submit"
                     disabled={isSubmitting || !draft.trim()}
                     aria-label="Send message"
-                    className="inline-flex h-11 w-11 shrink-0 items-center justify-center bg-gold text-dark transition hover:bg-gold-light disabled:opacity-60"
+                    className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded bg-gold text-dark transition hover:bg-gold-light disabled:opacity-60"
                   >
                     <Send className="h-4 w-4" />
                   </button>

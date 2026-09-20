@@ -31,7 +31,7 @@ export default function MobileMenu({ open, onClose, categories = [] }) {
             <NavLink
               to="/contact"
               onClick={onClose}
-              className="mt-3 inline-flex w-full items-center justify-center bg-gold px-4 py-3 text-sm font-semibold uppercase tracking-[0.14em] text-dark"
+              className="mt-3 inline-flex w-full items-center justify-center rounded bg-gold px-4 py-3 text-sm font-semibold uppercase tracking-[0.14em] text-dark"
             >
               Get a Quote
             </NavLink>
