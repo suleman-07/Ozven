@@ -4,19 +4,25 @@ import Breadcrumb from '../components/common/Breadcrumb'
 import Container from '../components/common/Container'
 import QuoteForm from '../components/common/QuoteForm'
 import SectionHeading from '../components/common/SectionHeading'
+import {
+  SITE_EMAIL,
+  SITE_EMAIL_HREF,
+  SITE_PHONE_DISPLAY,
+  SITE_PHONE_TEL,
+} from '../utils/siteConfig'
 
 const contactInfo = [
   {
     icon: Phone,
     label: 'Phone',
-    value: '+1 (000) 000-0000',
-    href: 'tel:+10000000000',
+    value: SITE_PHONE_DISPLAY,
+    href: SITE_PHONE_TEL,
   },
   {
     icon: Mail,
     label: 'Email',
-    value: 'hello@ozven.example',
-    href: 'mailto:hello@ozven.example',
+    value: SITE_EMAIL,
+    href: SITE_EMAIL_HREF,
   },
   {
     icon: MapPin,

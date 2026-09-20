@@ -51,6 +51,15 @@ app.use(
           return;
         }
 
+        // Custom storefront domain
+        if (
+          hostname === "ozvenpackaging.com" ||
+          hostname === "www.ozvenpackaging.com"
+        ) {
+          callback(null, true);
+          return;
+        }
+
         // Local Vite/dev servers often pick an alternate port (5174, etc.)
         if (
           process.env.NODE_ENV !== "production" &&
